@@ -380,7 +380,6 @@ void szescian(double X, double Y, double Z, double x, double y, double z, double
 		glBegin(GL_TRIANGLE_STRIP);
 		glVertex3fv(sa);
 		glVertex3fv(sb);
-		//glVertex3fv(sc);
 		glVertex3fv(sd);
 		glVertex3fv(sc);
 		glEnd();
@@ -389,7 +388,6 @@ void szescian(double X, double Y, double Z, double x, double y, double z, double
 		glBegin(GL_TRIANGLE_STRIP);
 		glVertex3fv(sb);
 		glVertex3fv(sf);
-		//glVertex3fv(sg);
 		glVertex3fv(sc);
 		glVertex3fv(sg);
 		glEnd();
@@ -398,7 +396,6 @@ void szescian(double X, double Y, double Z, double x, double y, double z, double
 		glBegin(GL_TRIANGLE_STRIP);
 		glVertex3fv(sf);
 		glVertex3fv(se);
-		//glVertex3fv(sh);
 		glVertex3fv(sg);
 		glVertex3fv(sh);
 		glEnd();
@@ -407,7 +404,6 @@ void szescian(double X, double Y, double Z, double x, double y, double z, double
 		glBegin(GL_TRIANGLE_STRIP);
 		glVertex3fv(se);
 		glVertex3fv(sa);
-		//glVertex3fv(sd);
 		glVertex3fv(sh);
 		glVertex3fv(sd);
 		glEnd();
@@ -416,7 +412,6 @@ void szescian(double X, double Y, double Z, double x, double y, double z, double
 		glBegin(GL_TRIANGLE_STRIP);
 		glVertex3fv(sd);
 		glVertex3fv(sc);
-		//glVertex3fv(sg);
 		glVertex3fv(sh);
 		glVertex3fv(sg);
 		glEnd();
@@ -425,7 +420,6 @@ void szescian(double X, double Y, double Z, double x, double y, double z, double
 		glBegin(GL_TRIANGLE_STRIP);
 		glVertex3fv(sa);
 		glVertex3fv(sb);
-		//	glVertex3fv(sf);
 		glVertex3fv(se);
 		glVertex3fv(sf);
 		glEnd();

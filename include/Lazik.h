@@ -21,16 +21,16 @@ private:
 	GLfloat ylen; // length
 	GLfloat zlen; // height
 
-	GLfloat wheelRadius; // promieñ ko³a
-	GLfloat wheelHeight; // wysokoœc (szerokoœæ) ko³a
+	GLfloat wheelRadius; // promien ko³a
+	GLfloat wheelHeight; // wysokosc (szerokosc) kola
 	std::vector<Walec> wheels;
 
-	GLfloat axleRadius; // promieñ osi
-	GLfloat axleHeight; // wysokoœæ (szerokoœæ) osi
+	GLfloat axleRadius; // promien osi
+	GLfloat axleHeight; // wysokosc (szerokosc) osi
 	std::vector<Walec> axles;
 
 	GLfloat platformEvelation; // podniesienie platformy nad poziom osi
-	GLfloat platformThickness; // gruboœæ platformy
+	GLfloat platformThickness; // grubosc platformy
 
 };
 

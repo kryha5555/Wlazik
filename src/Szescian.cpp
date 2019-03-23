@@ -15,7 +15,7 @@ Szescian::~Szescian()
 
 void Szescian::draw()
 {
-	//podany punkt jest jednym z rogów
+	//podany punkt jest jednym z rogow
 	GLfloat sa[3] = { xpos, ypos, zpos };
 	GLfloat sb[3] = { xpos + xlen, ypos, zpos };
 	GLfloat sc[3] = { xpos + xlen, ypos + ylen ,zpos };
