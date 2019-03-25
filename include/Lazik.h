@@ -10,16 +10,17 @@
 class Lazik : public Figura
 {
 public:
-	Lazik(GLfloat x, GLfloat y, GLfloat z, GLfloat xlen, GLfloat ylen, GLfloat zlen);
+	Lazik(GLfloat x, GLfloat y, GLfloat z);
 	~Lazik();
 
 	void draw();
 	void setParams();
 
 private:
-	GLfloat xlen; // width
-	GLfloat ylen; // length
-	GLfloat zlen; // height
+	//TODO: Renaming to platformXlen etc.
+	GLfloat xlen; // platform width
+	GLfloat ylen; // platform length
+	GLfloat zlen; // platform height
 
 	GLfloat wheelRadius; // promien ko³a
 	GLfloat wheelHeight; // wysokosc (szerokosc) kola
@@ -32,5 +33,10 @@ private:
 	GLfloat platformEvelation; // podniesienie platformy nad poziom osi
 	GLfloat platformThickness; // grubosc platformy
 
+	GLfloat cameraStandRadius;
+	GLfloat cameraStandHeight;
+	GLfloat  cameraxlen;
+	GLfloat cameraylen;
+	GLfloat camerazlen;
 };
 

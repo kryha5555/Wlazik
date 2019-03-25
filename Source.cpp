@@ -618,12 +618,7 @@ void RenderScene(void)
 	szescian(-x + h, -y - r, H, x + h, 2 * (y + r), d, gray);
 	*/
 
-	//*******TEMP***********
-	GLfloat promienOpony = 8;
-
-
-
-	Lazik rover(0, 0, 0, 6*promienOpony, 8 * promienOpony, promienOpony/*temp*/);
+	Lazik rover(0, 0, 0);
 	rover.draw(); 
 
 	/*Szescian rect(0, 0, 0, 10, 10, 10);

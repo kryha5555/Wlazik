@@ -5,9 +5,9 @@ Walec::Walec(GLfloat x, GLfloat y, GLfloat z, GLfloat r, GLfloat h)
 	: Figura(x, y, z)
 	, rlen{ r }
 	, hlen{ h }
-	,xtpos{x+h}
-	,ytpos{y}
-	,ztpos{z}
+	, xtpos{ x + h }
+	, ytpos{ y }
+	, ztpos{ z }
 {
 }
 
@@ -24,11 +24,20 @@ Walec::~Walec()
 {
 }
 
-void Walec::draw()
+void Walec::draw(GLfloat rotdeg, GLfloat rotx, GLfloat roty, GLfloat rotz)
 {
 	//podany punkt jest srodkiem jednej z podstaw
 
 	GLfloat alpha, y_, z_, PI = 3.14;
+
+	glPushMatrix();
+
+	if (rotdeg)
+	{
+		glTranslatef(xpos, ypos, zpos);
+		glRotatef(rotdeg, rotx, roty, rotz);
+		glTranslatef(-xpos, -ypos, -zpos);
+	}
 
 	glBegin(GL_TRIANGLE_FAN);
 	glColor3fv(color);
@@ -67,4 +76,7 @@ void Walec::draw()
 		glVertex3d(xtpos, y_, z_);
 	}
 	glEnd();
+
+	glPopMatrix();
 }
+

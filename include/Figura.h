@@ -12,7 +12,7 @@ public:
 	void setColor(GLfloat r, GLfloat g, GLfloat b);
 	virtual void draw();
 
-
+	//TODO: Rename to be more recognizable
 	GLfloat xpos, ypos, zpos;
 	GLfloat color[3];
 
