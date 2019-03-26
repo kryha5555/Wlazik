@@ -580,7 +580,7 @@ void RenderScene(void)
 	//szescian();
 
 	//Sposób na odróŸnienie "przedniej" i "tylniej" œciany wielok¹ta:
-	//glPolygonMode(GL_BACK, GL_LINE);
+	//glPolygonMode(GL_FRONT, GL_LINE);
 	//walec(40, 40);
 	//szescian();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

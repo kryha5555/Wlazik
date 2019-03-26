@@ -5,6 +5,7 @@
 #include <gl\glu.h>             // GLU library
 #include "Szescian.h"
 #include "Walec.h"
+#include "TriangularPrism.h"
 #include <vector>
 
 class Lazik : public Figura
@@ -35,8 +36,24 @@ private:
 
 	GLfloat cameraStandRadius;
 	GLfloat cameraStandHeight;
-	GLfloat  cameraxlen;
+	GLfloat cameraxlen;
 	GLfloat cameraylen;
 	GLfloat camerazlen;
+
+	GLfloat radioStandRadius;
+	GLfloat	radioStandHeight;
+	GLfloat radioTopRadius;
+	GLfloat radioTopHeight;
+
+	GLfloat flagPoleRadius;
+	GLfloat flagPoleHeight;
+	GLfloat flagxlen;
+	GLfloat flagylen;
+	GLfloat flagzlen;
+
+	GLfloat platformTopxlen;
+	GLfloat platformTopHeight;
+
+
 };
 

@@ -16,24 +16,24 @@ void Lazik::draw()
 	// drawing wheels
 	// left right; front middle rear
 	Walec lfWheel(
-		xpos, 
+		xpos,
 		ypos + ylen,
-		zpos, 
+		zpos,
 		wheelRadius,
 		-wheelHeight
 	);
 
 	Walec lmWheel(
-		xpos, 
-		ypos + ylen / 3, 
-		zpos, 
-		wheelRadius, 
+		xpos,
+		ypos + ylen / 3,
+		zpos,
+		wheelRadius,
 		-wheelHeight
 	);
 	Walec lrWheel(
-		xpos, 
-		ypos, 
-		zpos, 
+		xpos,
+		ypos,
+		zpos,
 		wheelRadius,
 		-wheelHeight
 	);
@@ -41,26 +41,26 @@ void Lazik::draw()
 	wheels.insert(wheels.end(), { lfWheel,lmWheel,lrWheel });
 
 	Walec rfWheel(
-		xpos + xlen + 4 * axleRadius, 
-		ypos + ylen, 
+		xpos + xlen + 4 * axleRadius,
+		ypos + ylen,
 		zpos,
 		wheelRadius,
 		wheelHeight
 	);
 
 	Walec rmWheel(
-		xpos + xlen + 4 * axleRadius, 
+		xpos + xlen + 4 * axleRadius,
 		ypos + ylen / 3,
-		zpos, 
-		wheelRadius, 
+		zpos,
+		wheelRadius,
 		wheelHeight
 	);
 
 	Walec rrWheel(
-		xpos + xlen + 4 * axleRadius, 
-		ypos, 
-		zpos, 
-		wheelRadius, 
+		xpos + xlen + 4 * axleRadius,
+		ypos,
+		zpos,
+		wheelRadius,
 		wheelHeight
 	);
 
@@ -168,11 +168,11 @@ void Lazik::draw()
 
 	//drawing platform
 	Szescian platform(
-		xpos + 2 * axleRadius, 
-		ypos, 
-		zpos + platformEvelation, 
-		xlen, 
-		ylen, 
+		xpos + 2 * axleRadius,
+		ypos,
+		zpos + platformEvelation,
+		xlen,
+		ylen,
 		platformThickness
 	);
 
@@ -183,26 +183,100 @@ void Lazik::draw()
 	Walec cameraStand(
 		xpos + xlen + 2 * axleRadius - 1.5*cameraStandRadius,  // xpos + xlen + 2 * axleRadius puts center of the base in right-front corner
 		ypos + ylen - 1.5*cameraStandRadius, // ypos + ylen, as above
-		zpos + platformEvelation + platformThickness, 
-		cameraStandRadius, 
+		zpos + platformEvelation + platformThickness,
+		cameraStandRadius,
 		cameraStandHeight //temporary, parameterized
 	);
 
-	cameraStand.setColor(0, 0, 1);
-	cameraStand.draw(-90,0,1,0); 
+	cameraStand.setColor(1, 0, 1);
+	cameraStand.draw(-90, 0, 1, 0);
 
 	Szescian cameraBox(
-		xpos + xlen + 2 * axleRadius - 1.5*cameraStandRadius-cameraxlen/2,
-		ypos + ylen - 1.5*cameraStandRadius-cameraylen /2,
-		zpos + platformEvelation + platformThickness+cameraStandHeight,
+		xpos + xlen + 2 * axleRadius - 1.5*cameraStandRadius - cameraxlen / 2,
+		ypos + ylen - 1.5*cameraStandRadius - cameraylen / 2,
+		zpos + platformEvelation + platformThickness + cameraStandHeight,
 		cameraxlen,
 		cameraylen,
 		camerazlen
 	);
-	
+
 	cameraBox.setColor(1, 0, 0);
 	cameraBox.draw();
 
+	//drawing radio
+	Walec radioStand(
+		xpos + xlen + 2 * axleRadius - 1.5*radioStandRadius,
+		ypos + 1.5*cameraStandRadius,
+		zpos + platformEvelation + platformThickness,
+		radioStandRadius,
+		radioStandHeight
+	);
+
+	radioStand.setColor(1, 0, 1);
+	radioStand.draw(-90, 0, 1, 0);
+
+	Walec radioTop(
+		xpos + xlen + 2 * axleRadius - 1.5*radioStandRadius,
+		ypos + 1.5*cameraStandRadius,
+		zpos + platformEvelation + platformThickness + radioStandHeight,
+		radioTopRadius,
+		radioTopHeight
+	);
+
+	radioTop.setColor(1, 0, 1);
+	radioTop.draw(-90, 0, 1, 0);
+
+	//drawing flag
+	Walec flagPole(
+		xpos + 2 * axleRadius + 5 * flagPoleRadius,
+		ypos + 5 * flagPoleRadius,
+		zpos + platformEvelation + platformThickness,
+		flagPoleRadius,
+		flagPoleHeight
+	);
+
+	flagPole.setColor(1, 0, 1);
+	flagPole.draw(-90, 0, 1, 0);
+
+	Szescian flag(
+		xpos + 2 * axleRadius + 5 * flagPoleRadius,
+		ypos + 5 * flagPoleRadius + flagylen / 2,
+		zpos + platformEvelation + platformThickness + flagPoleHeight,
+		-flagxlen,
+		-flagylen,
+		-flagzlen
+	);
+	flag.setColor(0, 0, 0);
+	flag.draw();
+
+	//drawing platform top
+	Szescian platformTopBack(
+		xpos + 2 * axleRadius,
+		ypos + 5 * radioStandRadius,
+		zpos + platformEvelation + platformThickness,
+		xlen,
+		platformTopxlen*(2.f / 3.f),
+		platformTopHeight
+	);
+
+	platformTopBack.setColor(0.22f, 0.72f, 0.80f);
+	platformTopBack.draw();
+
+	TriangularPrism platformTopFront(
+		xpos + xlen + 2 * axleRadius,
+		ypos + 5 * radioStandRadius + platformTopxlen * (2.f / 3.f),
+		zpos + platformEvelation + platformThickness,
+
+		platformTopHeight, // w z po rotacji
+
+		platformTopxlen*(1.f / 3.f),  // w y po rotacji
+		xlen // w x po rotacji
+
+	);
+
+	platformTopFront.setColor(0.22f, 0.72f, 0.80f);
+
+	platformTopFront.draw(-90, 0, 1, 0);
 }
 
 void Lazik::setParams()
@@ -223,7 +297,21 @@ void Lazik::setParams()
 
 	cameraStandRadius = 1.5*axleRadius;
 	cameraStandHeight = 3 * cameraStandRadius;
-	cameraxlen=ylen/3;
-	cameraylen=xlen/3;
-	camerazlen=platformThickness/3;
+	cameraxlen = ylen / 3;
+	cameraylen = xlen / 3;
+	camerazlen = platformThickness / 3;
+
+	radioStandRadius = axleRadius;
+	radioStandHeight = 4 * radioStandRadius;
+	radioTopRadius = radioStandRadius * 2;
+	radioTopHeight = radioStandHeight / 2;
+
+	flagPoleRadius = 0.5f;
+	flagPoleHeight = 3 * cameraStandHeight;
+	flagxlen = 20;
+	flagylen = 0.5f;
+	flagzlen = 10;
+
+	platformTopxlen = ylen - cameraxlen;
+	platformTopHeight = 1.5*platformThickness;
 }
