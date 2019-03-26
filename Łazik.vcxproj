@@ -126,12 +126,14 @@
     <ClCompile Include="src\Figura.cpp" />
     <ClCompile Include="src\Lazik.cpp" />
     <ClCompile Include="src\Szescian.cpp" />
+    <ClCompile Include="src\TriangularPrism.cpp" />
     <ClCompile Include="src\Walec.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Figura.h" />
     <ClInclude Include="include\Lazik.h" />
     <ClInclude Include="include\Szescian.h" />
+    <ClInclude Include="include\TriangularPrism.h" />
     <ClInclude Include="include\Walec.h" />
     <ClInclude Include="Resource.h" />
   </ItemGroup>

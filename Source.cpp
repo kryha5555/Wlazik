@@ -380,7 +380,6 @@ void szescian(double X, double Y, double Z, double x, double y, double z, double
 		glBegin(GL_TRIANGLE_STRIP);
 		glVertex3fv(sa);
 		glVertex3fv(sb);
-		//glVertex3fv(sc);
 		glVertex3fv(sd);
 		glVertex3fv(sc);
 		glEnd();
@@ -389,7 +388,6 @@ void szescian(double X, double Y, double Z, double x, double y, double z, double
 		glBegin(GL_TRIANGLE_STRIP);
 		glVertex3fv(sb);
 		glVertex3fv(sf);
-		//glVertex3fv(sg);
 		glVertex3fv(sc);
 		glVertex3fv(sg);
 		glEnd();
@@ -398,7 +396,6 @@ void szescian(double X, double Y, double Z, double x, double y, double z, double
 		glBegin(GL_TRIANGLE_STRIP);
 		glVertex3fv(sf);
 		glVertex3fv(se);
-		//glVertex3fv(sh);
 		glVertex3fv(sg);
 		glVertex3fv(sh);
 		glEnd();
@@ -407,7 +404,6 @@ void szescian(double X, double Y, double Z, double x, double y, double z, double
 		glBegin(GL_TRIANGLE_STRIP);
 		glVertex3fv(se);
 		glVertex3fv(sa);
-		//glVertex3fv(sd);
 		glVertex3fv(sh);
 		glVertex3fv(sd);
 		glEnd();
@@ -416,7 +412,6 @@ void szescian(double X, double Y, double Z, double x, double y, double z, double
 		glBegin(GL_TRIANGLE_STRIP);
 		glVertex3fv(sd);
 		glVertex3fv(sc);
-		//glVertex3fv(sg);
 		glVertex3fv(sh);
 		glVertex3fv(sg);
 		glEnd();
@@ -425,7 +420,6 @@ void szescian(double X, double Y, double Z, double x, double y, double z, double
 		glBegin(GL_TRIANGLE_STRIP);
 		glVertex3fv(sa);
 		glVertex3fv(sb);
-		//	glVertex3fv(sf);
 		glVertex3fv(se);
 		glVertex3fv(sf);
 		glEnd();
@@ -586,7 +580,7 @@ void RenderScene(void)
 	//szescian();
 
 	//Sposób na odróŸnienie "przedniej" i "tylniej" œciany wielok¹ta:
-	//glPolygonMode(GL_BACK, GL_LINE);
+	//glPolygonMode(GL_FRONT, GL_LINE);
 	//walec(40, 40);
 	//szescian();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -624,12 +618,7 @@ void RenderScene(void)
 	szescian(-x + h, -y - r, H, x + h, 2 * (y + r), d, gray);
 	*/
 
-	//*******TEMP***********
-	GLfloat promienOpony = 8;
-
-
-
-	Lazik rover(0, 0, 0, 6*promienOpony, 8 * promienOpony, promienOpony/*temp*/);
+	Lazik rover(0, 0, 0);
 	rover.draw(); 
 
 	/*Szescian rect(0, 0, 0, 10, 10, 10);

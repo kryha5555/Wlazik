@@ -40,6 +40,9 @@
       <Filter>Source Files\Figury</Filter>
     </ClCompile>
     <ClCompile Include="src\Figura.cpp">
+      <Filter>Source Files\Figury</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TriangularPrism.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -57,6 +60,9 @@
       <Filter>Header Files\Figury</Filter>
     </ClInclude>
     <ClInclude Include="include\Figura.h">
+      <Filter>Header Files\Figury</Filter>
+    </ClInclude>
+    <ClInclude Include="include\TriangularPrism.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
