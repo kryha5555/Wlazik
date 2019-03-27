@@ -1,5 +1,5 @@
-#pragma once
-#include <windows.h>            // Window defines
+#pragma once          // Window defines
+#include <windows.h>
 #include <gl\gl.h>              // OpenGL
 #include <gl\glu.h>  
 #include "Figura.h"
