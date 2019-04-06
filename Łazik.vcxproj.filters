@@ -43,7 +43,7 @@
       <Filter>Source Files\Figury</Filter>
     </ClCompile>
     <ClCompile Include="src\TriangularPrism.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Figury</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -63,7 +63,7 @@
       <Filter>Header Files\Figury</Filter>
     </ClInclude>
     <ClInclude Include="include\TriangularPrism.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Figury</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

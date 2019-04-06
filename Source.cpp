@@ -47,6 +47,7 @@ static HINSTANCE hInstance;
 // Rotation amounts
 static GLfloat xRot = 0.0f;
 static GLfloat yRot = 0.0f;
+static GLfloat zRot = 0.0f;
 
 
 static GLsizei lastHeight;
@@ -573,6 +574,7 @@ void RenderScene(void)
 	glPushMatrix();
 	glRotatef(xRot, 1.0f, 0.0f, 0.0f);
 	glRotatef(yRot, 0.0f, 1.0f, 0.0f);
+	glRotatef(zRot, 0.0f, 0.0f, 1.0f);
 
 	/////////////////////////////////////////////////////////////////
 	// MIEJSCE NA KOD OPENGL DO TWORZENIA WLASNYCH SCEN:		   //
@@ -986,8 +988,15 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		if (wParam == VK_RIGHT)
 			yRot += 5.0f;
 
+		if (wParam == VK_SUBTRACT)
+			zRot -= 5.0f;
+
+		if (wParam == VK_ADD)
+			zRot += 5.0f;
+
 		xRot = (const int)xRot % 360;
 		yRot = (const int)yRot % 360;
+		zRot = (const int)zRot % 360;
 
 		InvalidateRect(hWnd, NULL, FALSE);
 	}
