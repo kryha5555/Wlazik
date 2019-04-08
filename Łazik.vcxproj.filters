@@ -65,6 +65,9 @@
     <ClInclude Include="include\TriangularPrism.h">
       <Filter>Header Files\Figury</Filter>
     </ClInclude>
+    <ClInclude Include="include\OBJ_Loader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="RESOURCE.APS">

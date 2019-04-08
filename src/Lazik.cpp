@@ -21,7 +21,7 @@ void Lazik::draw()
 		zpos,
 		wheelRadius,
 		-wheelHeight
-		);
+	);
 
 	Walec lmWheel(
 		xpos,
@@ -29,14 +29,14 @@ void Lazik::draw()
 		zpos,
 		wheelRadius,
 		-wheelHeight
-		);
+	);
 	Walec lrWheel(
 		xpos,
 		ypos,
 		zpos,
 		wheelRadius,
 		-wheelHeight
-		);
+	);
 
 	wheels.insert(wheels.end(), { lfWheel,lmWheel,lrWheel });
 
@@ -46,7 +46,7 @@ void Lazik::draw()
 		zpos,
 		wheelRadius,
 		wheelHeight
-		);
+	);
 
 	Walec rmWheel(
 		xpos + xlen + 4 * axleRadius,
@@ -54,7 +54,7 @@ void Lazik::draw()
 		zpos,
 		wheelRadius,
 		wheelHeight
-		);
+	);
 
 	Walec rrWheel(
 		xpos + xlen + 4 * axleRadius,
@@ -62,7 +62,7 @@ void Lazik::draw()
 		zpos,
 		wheelRadius,
 		wheelHeight
-		);
+	);
 
 
 	wheels.insert(wheels.end(), { rfWheel,rmWheel,rrWheel });
@@ -84,7 +84,7 @@ void Lazik::draw()
 		xpos + 2 * axleRadius,
 		ypos + (2.f / 3.f)*ylen,
 		zpos + platformEvelation + platformThickness / 2
-		);
+	);
 
 	Walec ltAxle(
 		xpos + axleRadius,
@@ -94,7 +94,7 @@ void Lazik::draw()
 		xpos + 2 * axleRadius,
 		ypos + (2.f / 3.f)*ylen,
 		zpos + platformEvelation + platformThickness / 2
-		);
+	);
 
 	Walec lbAxle(
 		xpos,
@@ -104,7 +104,7 @@ void Lazik::draw()
 		xpos + axleRadius,
 		ypos + ylen / 6,
 		zpos + (2.f / 3.f)*platformEvelation
-		);
+	);
 
 	Walec lrAxle(
 		xpos,
@@ -114,7 +114,7 @@ void Lazik::draw()
 		xpos + axleRadius,
 		ypos + ylen / 6,
 		zpos + (2.f / 3.f)*platformEvelation
-		);
+	);
 
 	axles.insert(axles.end(), { lfAxle,ltAxle,lbAxle, lrAxle });
 
@@ -126,7 +126,7 @@ void Lazik::draw()
 		xpos + +xlen + 2 * axleRadius,
 		ypos + (2.f / 3.f)*ylen,
 		zpos + platformEvelation + platformThickness / 2
-		);
+	);
 
 	Walec rtAxle(
 		xpos + xlen + 3 * axleRadius,
@@ -136,7 +136,7 @@ void Lazik::draw()
 		xpos + xlen + 2 * axleRadius,
 		ypos + (2.f / 3.f)*ylen,
 		zpos + platformEvelation + platformThickness / 2
-		);
+	);
 
 	Walec rbAxle(xpos + xlen + 4 * axleRadius,
 		ypos + ylen / 3,
@@ -145,7 +145,7 @@ void Lazik::draw()
 		xpos + xlen + 3 * axleRadius,
 		ypos + ylen / 6,
 		zpos + (2.f / 3.f)*platformEvelation
-		);
+	);
 
 	Walec rrAxle(
 		xpos + xlen + 4 * axleRadius,
@@ -155,7 +155,7 @@ void Lazik::draw()
 		xpos + xlen + 3 * axleRadius,
 		ypos + ylen / 6,
 		zpos + (2.f / 3.f)*platformEvelation
-		);
+	);
 
 	axles.insert(axles.end(), { rfAxle,rtAxle,rbAxle,rrAxle });
 	//TODO: znalezc lepszy pomysl na to ^
@@ -174,7 +174,7 @@ void Lazik::draw()
 		xlen,
 		ylen,
 		platformThickness
-		);
+	);
 
 	platform.setColor(0, 1, 0);
 	platform.draw();
@@ -186,7 +186,7 @@ void Lazik::draw()
 		zpos + platformEvelation + platformThickness,
 		cameraStandRadius,
 		cameraStandHeight //temporary, parameterized
-		);
+	);
 
 	cameraStand.setColor(1, 0, 1);
 	cameraStand.draw(-90, 0, 1, 0);
@@ -198,7 +198,7 @@ void Lazik::draw()
 		cameraxlen,
 		cameraylen,
 		camerazlen
-		);
+	);
 
 	cameraBox.setColor(1, 0, 0);
 	cameraBox.draw();
@@ -210,7 +210,7 @@ void Lazik::draw()
 		zpos + platformEvelation + platformThickness,
 		radioStandRadius,
 		radioStandHeight
-		);
+	);
 
 	radioStand.setColor(1, 0, 1);
 	radioStand.draw(-90, 0, 1, 0);
@@ -221,7 +221,7 @@ void Lazik::draw()
 		zpos + platformEvelation + platformThickness + radioStandHeight,
 		radioTopRadius,
 		radioTopHeight
-		);
+	);
 
 	radioTop.setColor(1, 0, 1);
 	radioTop.draw(-90, 0, 1, 0);
@@ -233,7 +233,7 @@ void Lazik::draw()
 		zpos + platformEvelation + platformThickness,
 		flagPoleRadius,
 		flagPoleHeight
-		);
+	);
 
 	flagPole.setColor(1, 0, 1);
 	flagPole.draw(-90, 0, 1, 0);
@@ -245,7 +245,7 @@ void Lazik::draw()
 		-flagxlen,
 		-flagylen,
 		-flagzlen
-		);
+	);
 	flag.setColor(0, 0, 0);
 	flag.draw();
 
@@ -257,7 +257,7 @@ void Lazik::draw()
 		xlen,
 		platformTopxlen*(2.f / 3.f),
 		platformTopHeight
-		);
+	);
 
 	platformTopBack.setColor(0.22f, 0.72f, 0.80f);
 	platformTopBack.draw();
@@ -272,16 +272,16 @@ void Lazik::draw()
 		platformTopxlen*(1.f / 3.f),  // w y po rotacji
 		xlen // w x po rotacji
 
-		);
+	);
 
 	platformTopFront.setColor(0.22f, 0.72f, 0.80f);
 
 	platformTopFront.draw(-90, 0, 1, 0);
 
 	// drawing floor
-	Szescian floor(-10000, -10000, -wheelRadius, 20000, 20000, 0.1);
-	floor.setColor(0.59f, 0.27f, 0.08f);
-	floor.draw();
+	//Szescian floor(-10000, -10000, -wheelRadius, 20000, 20000, 0.1);
+	//floor.setColor(0.59f, 0.27f, 0.08f);
+	//floor.draw();
 
 	TriangularPrism kamien(
 		-20,
@@ -290,12 +290,10 @@ void Lazik::draw()
 		15,
 		20,
 		30
-		);
+	);
 
 	kamien.setColor(0.6, 0.6, 0.6);
-	kamien.draw(-90,0,1,0);
-
-
+	//kamien.draw(-90,0,1,0);
 
 }
 

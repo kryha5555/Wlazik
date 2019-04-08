@@ -33,6 +33,8 @@
 #include <stdio.h>
 #include "resource.h"           // About box resource identifiers.
 #include "include/Lazik.h"
+#include "include/OBJ_Loader.h"
+
 #define glRGB(x, y, z)	glColor3ub((GLubyte)x, (GLubyte)y, (GLubyte)z)
 #define BITMAP_ID 0x4D42		// identyfikator formatu BMP
 #define GL_PI 3.14
@@ -49,7 +51,7 @@ static GLfloat xRot = 0.0f;
 static GLfloat yRot = 0.0f;
 static GLfloat zRot = 0.0f;
 
-
+static GLfloat zoom;
 static GLsizei lastHeight;
 static GLsizei lastWidth;
 
@@ -70,7 +72,6 @@ BOOL APIENTRY AboutDlgProc(HWND hDlg, UINT message, UINT wParam, LONG lParam);
 
 // Set Pixel Format function - forward declaration
 void SetDCPixelFormat(HDC hDC);
-
 
 
 // Reduces a normal vector specified as a set of three coordinates,
@@ -153,9 +154,8 @@ void ChangeSize(GLsizei w, GLsizei h)
 		glOrtho(-nRange * w / h, nRange*w / h, -nRange, nRange, -nRange, nRange);
 
 	// Establish perspective: 
-	/*
-	gluPerspective(60.0f,fAspect,1.0,400);
-	*/
+	
+	//gluPerspective(60.0f,fAspect,1.0,400);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -579,65 +579,57 @@ void RenderScene(void)
 	/////////////////////////////////////////////////////////////////
 	// MIEJSCE NA KOD OPENGL DO TWORZENIA WLASNYCH SCEN:		   //
 	/////////////////////////////////////////////////////////////////
-	//szescian();
 
 	//Sposób na odróŸnienie "przedniej" i "tylniej" œciany wielok¹ta:
 	//glPolygonMode(GL_FRONT, GL_LINE);
-	//walec(40, 40);
-	//szescian();
+
+	
+	glRotatef(zoom, 0, 0, 0);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	/*GLfloat x, y, z, r, h, H, d;
-	r = 7.5; //promieñ walca
-	h = 10; // wysokoœc walca
-	x = 20; // przesuniêcie ko³a
-	y = 20; // -||-
-	z = 20; // -||-
-	H = 10; // wysokoœc platformy
-	d = 5; // gruboœc platformy
-
-	//walec2(r, h,x, 0, 0);
-	//walec2(r, h, -x, 0, 0);
-	double red[3] = { 1,0,0 };
-	double green[3] = { 0,1,0 };
-	double blue[3] = { 0,0,1 };
-	double gray[3] = { 0.5,0.5,0.5 };
-	for (int i = -1; i < 2; i++)
-	{
-		walec2(r, h, x, i*y, 0, red);
-		walec2(r, h, -x, i*y, 0, green);
-	}
-
-	for (int i = -1; i < 2; i++)
-	{
-		//walec2(r/10, h+x, x, i*y, 0);
-		//walec2(r / 10, h + x + r, -x+r, i*y, 0,blue);
-		//walec2(r / 10, 2*(x), x-2*h , i*y, 0, blue);
-		walec2(r / 10, -2 * x + h, x, i*y, 0, blue);
-
-		//X + h, Y, Z
-	}
-
-	szescian(-x + h, -y - r, H, x + h, 2 * (y + r), d, gray);
-	*/
-
-	Lazik rover(0, 0, 0);
+	Lazik rover(-25, -25, 10);
 	rover.draw(); 
+	
+	objl::Loader floor;
+	glPushMatrix();
 
-	/*Szescian rect(0, 0, 0, 10, 10, 10);
-	rect.setColor(0, 1, 0);
-	rect.draw();
+	glRotatef(90, 1, 0, 0);
+	glScalef(2, 2, 2);
 
-	Walec cyl(0,0,40,10,15);
-	cyl.setColor(0, 1, 1);
-	cyl.draw();*/
-	//walec2(r, h, x, 0, 0);
+	if (floor.LoadFile("objects/floor.obj"))
+	{
+		for (int i = 0; i < floor.LoadedMeshes.size(); i++)
+		{
+			objl::Mesh curMesh = floor.LoadedMeshes[i];
 
-	//Uzyskanie siatki:
-	//glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+			for (int j = 0; j < curMesh.Indices.size(); j += 3)
+			{
+				glBegin(GL_TRIANGLES);
+				//double random = 0.5f + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (0.55f - 0.5f)));
+				glColor3f(1,0,0);
+				if (i == 0) glColor3f(0, 0, 1);
+				glVertex3f(
+					curMesh.Vertices[curMesh.Indices[j]].Position.X,
+					curMesh.Vertices[curMesh.Indices[j]].Position.Y ,
+					curMesh.Vertices[curMesh.Indices[j]].Position.Z 
+				);
 
-	//Wyrysowanie prostokata:
-	//glRectd(-10.0,-10.0,20.0,20.0);
+				glVertex3f(
+					curMesh.Vertices[curMesh.Indices[j+1]].Position.X ,
+					curMesh.Vertices[curMesh.Indices[j+1]].Position.Y,
+					curMesh.Vertices[curMesh.Indices[j+1]].Position.Z
+				);
 
+				glVertex3f(
+					curMesh.Vertices[curMesh.Indices[j+2]].Position.X ,
+					curMesh.Vertices[curMesh.Indices[j+2]].Position.Y,
+					curMesh.Vertices[curMesh.Indices[j+2]].Position.Z
+				);
+				glEnd();
+			}
+		}
+	}
+	
+	glPopMatrix();
 	/////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////
@@ -988,11 +980,17 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		if (wParam == VK_RIGHT)
 			yRot += 5.0f;
 
-		if (wParam == VK_SUBTRACT)
+		if (wParam == VK_PRIOR)
 			zRot -= 5.0f;
-
-		if (wParam == VK_ADD)
+			
+		if (wParam == VK_NEXT)
 			zRot += 5.0f;
+			
+		if (wParam == VK_SUBTRACT)
+			zoom -= 3;
+			
+		if (wParam == VK_ADD)
+			zoom += 3;
 
 		xRot = (const int)xRot % 360;
 		yRot = (const int)yRot % 360;

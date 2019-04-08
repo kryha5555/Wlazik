@@ -132,6 +132,7 @@
   <ItemGroup>
     <ClInclude Include="include\Figura.h" />
     <ClInclude Include="include\Lazik.h" />
+    <ClInclude Include="include\OBJ_Loader.h" />
     <ClInclude Include="include\Szescian.h" />
     <ClInclude Include="include\TriangularPrism.h" />
     <ClInclude Include="include\Walec.h" />
