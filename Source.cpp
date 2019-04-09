@@ -33,6 +33,8 @@
 #include <stdio.h>
 #include "resource.h"           // About box resource identifiers.
 #include "include/Lazik.h"
+#include "include/Terrain.h";
+
 #define glRGB(x, y, z)	glColor3ub((GLubyte)x, (GLubyte)y, (GLubyte)z)
 #define BITMAP_ID 0x4D42		// identyfikator formatu BMP
 #define GL_PI 3.14
@@ -47,8 +49,9 @@ static HINSTANCE hInstance;
 // Rotation amounts
 static GLfloat xRot = 0.0f;
 static GLfloat yRot = 0.0f;
+static GLfloat zRot = 0.0f;
 
-
+static GLfloat zoom;
 static GLsizei lastHeight;
 static GLsizei lastWidth;
 
@@ -69,7 +72,6 @@ BOOL APIENTRY AboutDlgProc(HWND hDlg, UINT message, UINT wParam, LONG lParam);
 
 // Set Pixel Format function - forward declaration
 void SetDCPixelFormat(HDC hDC);
-
 
 
 // Reduces a normal vector specified as a set of three coordinates,
@@ -152,9 +154,8 @@ void ChangeSize(GLsizei w, GLsizei h)
 		glOrtho(-nRange * w / h, nRange*w / h, -nRange, nRange, -nRange, nRange);
 
 	// Establish perspective: 
-	/*
-	gluPerspective(60.0f,fAspect,1.0,400);
-	*/
+	
+	//gluPerspective(60.0f,fAspect,1.0,400);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -206,91 +207,6 @@ void SetupRC()
 	// Black brush
 	glColor3f(0.0, 0.0, 0.0);
 }
-
-void skrzynka(void)
-{
-	glColor3d(0.8, 0.7, 0.3);
-
-
-	glEnable(GL_TEXTURE_2D); // W³¹cz teksturowanie
-
-	glBindTexture(GL_TEXTURE_2D, texture[0]);
-	glBegin(GL_QUADS);
-	glNormal3d(0, 0, 1);
-	glTexCoord2d(1.0, 1.0); glVertex3d(25, 25, 25);
-	glTexCoord2d(0.0, 1.0); glVertex3d(-25, 25, 25);
-	glTexCoord2d(0.0, 0.0); glVertex3d(-25, -25, 25);
-	glTexCoord2d(1.0, 0.0); glVertex3d(25, -25, 25);
-	glEnd();
-	glBindTexture(GL_TEXTURE_2D, texture[1]);
-	glBegin(GL_QUADS);
-	glNormal3d(1, 0, 0);
-	glTexCoord2d(1.0, 1.0); glVertex3d(25, 25, 25);
-	glTexCoord2d(0.0, 1.0); glVertex3d(25, -25, 25);
-	glTexCoord2d(0.0, 0.0); glVertex3d(25, -25, -25);
-	glTexCoord2d(1.0, 0.0); glVertex3d(25, 25, -25);
-	glEnd();
-
-	glDisable(GL_TEXTURE_2D); // Wy³¹cz teksturowanie
-
-
-
-	glBegin(GL_QUADS);
-	glNormal3d(0, 0, -1);
-	glVertex3d(25, 25, -25);
-	glVertex3d(25, -25, -25);
-	glVertex3d(-25, -25, -25);
-	glVertex3d(-25, 25, -25);
-
-	glNormal3d(-1, 0, 0);
-	glVertex3d(-25, 25, -25);
-	glVertex3d(-25, -25, -25);
-	glVertex3d(-25, -25, 25);
-	glVertex3d(-25, 25, 25);
-
-	glNormal3d(0, 1, 0);
-	glVertex3d(25, 25, 25);
-	glVertex3d(25, 25, -25);
-	glVertex3d(-25, 25, -25);
-	glVertex3d(-25, 25, 25);
-
-	glNormal3d(0, -1, 0);
-	glVertex3d(25, -25, 25);
-	glVertex3d(-25, -25, 25);
-	glVertex3d(-25, -25, -25);
-	glVertex3d(25, -25, -25);
-	glEnd();
-}
-
-void walec01(void)
-{
-	GLUquadricObj*obj;
-	obj = gluNewQuadric();
-	gluQuadricNormals(obj, GLU_SMOOTH);
-	glColor3d(1, 0, 0);
-	glPushMatrix();
-	gluCylinder(obj, 20, 20, 30, 15, 7);
-	gluCylinder(obj, 0, 20, 0, 15, 7);
-	glTranslated(0, 0, 60);
-	glRotated(180.0, 0, 1, 0);
-	gluCylinder(obj, 0, 20, 30, 15, 7);
-	glPopMatrix();
-}
-
-void kula(void)
-{
-	GLUquadricObj*obj;
-	obj = gluNewQuadric();
-	gluQuadricTexture(obj, GL_TRUE);
-	glBindTexture(GL_TEXTURE_2D, texture[0]);
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glColor3d(1.0, 0.8, 0.8);
-	glEnable(GL_TEXTURE_2D);
-	gluSphere(obj, 40, 15, 7);
-	glDisable(GL_TEXTURE_2D);
-}
-
-
 
 
 // LoadBitmapFile
@@ -359,208 +275,6 @@ unsigned char *LoadBitmapFile(char *filename, BITMAPINFOHEADER *bitmapInfoHeader
 	fclose(filePtr);
 	return bitmapImage;
 }
-void szescian(double X, double Y, double Z, double x, double y, double z, double kolor[3])
-{            //^pozycja pocz¹tkowa                ^d³ugoœci
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	{
-		// Parametry wierzcholkow
-
-		GLfloat sa[3] = { X,Y,Z };
-		GLfloat sb[3] = { X + x,Y,Z };
-		GLfloat sc[3] = { X + x,Y + y,Z };
-		GLfloat sd[3] = { X,Y + y,Z };
-		GLfloat se[3] = { X,Y,Z + z };
-		GLfloat sf[3] = { X + x,Y,Z + z };
-		GLfloat sg[3] = { X + x,Y + y,Z + z };
-		GLfloat sh[3] = { X,Y + y,Z + z };
-
-
-		// Sciany skladowe
-		glColor3dv(kolor);
-		glBegin(GL_TRIANGLE_STRIP);
-		glVertex3fv(sa);
-		glVertex3fv(sb);
-		glVertex3fv(sd);
-		glVertex3fv(sc);
-		glEnd();
-
-		//	glColor3f(0.0f, 1.0f, 0.0f);
-		glBegin(GL_TRIANGLE_STRIP);
-		glVertex3fv(sb);
-		glVertex3fv(sf);
-		glVertex3fv(sc);
-		glVertex3fv(sg);
-		glEnd();
-
-		//	glColor3f(0.0f, 0.0f, 1.0f);
-		glBegin(GL_TRIANGLE_STRIP);
-		glVertex3fv(sf);
-		glVertex3fv(se);
-		glVertex3fv(sg);
-		glVertex3fv(sh);
-		glEnd();
-
-		//glColor3f(1.0f, 1.0f, 0.0f);
-		glBegin(GL_TRIANGLE_STRIP);
-		glVertex3fv(se);
-		glVertex3fv(sa);
-		glVertex3fv(sh);
-		glVertex3fv(sd);
-		glEnd();
-
-		//glColor3f(0.0f, 1.0f, 1.0f);
-		glBegin(GL_TRIANGLE_STRIP);
-		glVertex3fv(sd);
-		glVertex3fv(sc);
-		glVertex3fv(sh);
-		glVertex3fv(sg);
-		glEnd();
-
-		//glColor3f(1.0f, 0.0f, 1.0f);
-		glBegin(GL_TRIANGLE_STRIP);
-		glVertex3fv(sa);
-		glVertex3fv(sb);
-		glVertex3fv(se);
-		glVertex3fv(sf);
-		glEnd();
-	}
-}
-
-void walec(double r, double h, double X, double Y, double Z)
-{
-	double x, y, alpha, PI = 3.14;
-	glBegin(GL_TRIANGLE_FAN);
-	glColor3d(0.8, 0.0, 0);
-	glVertex3d(X, Y, Z);
-	for (alpha = 0; alpha <= 2 * PI; alpha += PI / 8.0)
-	{
-		x = X + r * sin(alpha);
-		y = Y + r * cos(alpha);
-		glVertex3d(x, y, Z);
-	}
-	glEnd();
-
-	glBegin(GL_QUAD_STRIP);
-	for (alpha = 0.0; alpha <= 2 * PI; alpha += PI / 8.0)
-	{
-		x = X + r * sin(alpha);
-		y = Y + r * cos(alpha);
-		glVertex3d(x, y, Z);
-		glVertex3d(x, y, Z + h);
-	}
-	glEnd();
-
-	glBegin(GL_TRIANGLE_FAN);
-	glVertex3d(X + h, Y, Z);
-	for (alpha = 0; alpha >= -2 * PI; alpha -= PI / 8.0)
-	{
-		x = X + r * sin(alpha);
-		y = Y + r * cos(alpha);
-		glVertex3d(x, y, Z + h);
-	}
-	glEnd();
-}
-void walec2(double r, double h, double X, double Y, double Z, double kolor[])
-{
-	double x, y, z, alpha, PI = 3.15;
-	glBegin(GL_TRIANGLE_FAN);
-	glColor3dv(kolor);
-	glVertex3d(X, Y, Z);
-	for (alpha = 0; alpha <= 2 * PI; alpha += PI / 8.0)
-	{
-		y = Y + r * sin(alpha);
-		z = Z + r * cos(alpha);
-		glVertex3d(X, y, z);
-	}
-	glEnd();
-
-	glBegin(GL_QUAD_STRIP);
-	for (alpha = 0.0; alpha <= 2 * PI; alpha += PI / 8.0)
-	{
-		y = Y + r * sin(alpha);
-		z = Z + r * cos(alpha);
-		glVertex3d(X, y, z);
-		glVertex3d(X + h, y, z);
-	}
-	glEnd();
-
-	glBegin(GL_TRIANGLE_FAN);
-	glVertex3d(X + h, Y, Z);
-	for (alpha = 0; alpha >= -2 * PI; alpha -= PI / 8.0)
-	{
-		y = Y + r * sin(alpha);
-		z = Z + r * cos(alpha);
-		glVertex3d(h + X, y, z);
-	}
-	glEnd();
-}
-void ramie(double r1, double r2, double h, double d)
-{
-	double PI = 3.14, alpha, x, y;
-	glBegin(GL_TRIANGLE_FAN);
-	glColor3d(0.8, 0.0, 0);
-	glVertex3d(0, 0, 0);
-	for (alpha = PI; alpha <= 2 * PI; alpha += PI / 8.0)
-	{
-		x = r1 * sin(alpha);
-		y = r1 * cos(alpha);
-		glVertex3d(x, y, 0);
-	}
-	glEnd();
-
-	glBegin(GL_QUAD_STRIP);
-	for (alpha = 0; alpha >= -PI; alpha -= PI / 8.0)
-	{
-		x = r1 * sin(alpha);
-		y = r1 * cos(alpha);
-		glVertex3d(x, y, h);
-		glVertex3d(x, y, 0);
-	}
-	glEnd();
-
-	glBegin(GL_TRIANGLE_FAN);
-	glVertex3d(0, 0, h);
-	for (alpha = 0; alpha >= -PI; alpha -= PI / 8.0)
-	{
-		x = r1 * sin(alpha);
-		y = r1 * cos(alpha);
-		glVertex3d(x, y, h);
-	}
-	glEnd();
-
-	glBegin(GL_TRIANGLE_FAN);
-	glColor3d(0.8, 0.0, 0);
-	//glVertex3d(d,r2,0);
-	//glVertex3d(d, r2, h);
-	for (alpha = 0; alpha <= PI; alpha += PI / 8.0)
-	{
-		x = d + r2 * sin(alpha);
-		y = d + r2 * cos(alpha);
-		glVertex3d(x, y, 0);
-	}
-	glEnd();
-
-	glBegin(GL_QUAD_STRIP);
-	//glVertex3d(d, r2, 0);
-	for (alpha = 0; alpha <= PI; alpha += PI / 8.0)
-	{
-		x = d + r2 * sin(alpha);
-		y = d + r2 * cos(alpha);
-		glVertex3d(x, y, h);
-		glVertex3d(x, y, 0);
-	}
-	glEnd();
-
-	glBegin(GL_TRIANGLE_FAN);
-	//glVertex3d(d, r2, h);
-	for (alpha = 0; alpha <= PI; alpha += PI / 8.0)
-	{
-		x = d + r2 * sin(alpha);
-		y = d + r2 * cos(alpha);
-		glVertex3d(x, y, h);
-	}
-	glEnd();
-}
 // Called to draw scene
 void RenderScene(void)
 {
@@ -568,74 +282,32 @@ void RenderScene(void)
 
 	// Clear the window with current clearing color
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	// Save the matrix state and do the rotations
 	glPushMatrix();
 	glRotatef(xRot, 1.0f, 0.0f, 0.0f);
 	glRotatef(yRot, 0.0f, 1.0f, 0.0f);
+	glRotatef(zRot, 0.0f, 0.0f, 1.0f);
+	glRotatef(zoom, 0, 0, 0);
 
 	/////////////////////////////////////////////////////////////////
 	// MIEJSCE NA KOD OPENGL DO TWORZENIA WLASNYCH SCEN:		   //
 	/////////////////////////////////////////////////////////////////
-	//szescian();
 
 	//Sposób na odróŸnienie "przedniej" i "tylniej" œciany wielok¹ta:
 	//glPolygonMode(GL_FRONT, GL_LINE);
-	//walec(40, 40);
-	//szescian();
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	/*GLfloat x, y, z, r, h, H, d;
-	r = 7.5; //promieñ walca
-	h = 10; // wysokoœc walca
-	x = 20; // przesuniêcie ko³a
-	y = 20; // -||-
-	z = 20; // -||-
-	H = 10; // wysokoœc platformy
-	d = 5; // gruboœc platformy
 
-	//walec2(r, h,x, 0, 0);
-	//walec2(r, h, -x, 0, 0);
-	double red[3] = { 1,0,0 };
-	double green[3] = { 0,1,0 };
-	double blue[3] = { 0,0,1 };
-	double gray[3] = { 0.5,0.5,0.5 };
-	for (int i = -1; i < 2; i++)
-	{
-		walec2(r, h, x, i*y, 0, red);
-		walec2(r, h, -x, i*y, 0, green);
-	}
-
-	for (int i = -1; i < 2; i++)
-	{
-		//walec2(r/10, h+x, x, i*y, 0);
-		//walec2(r / 10, h + x + r, -x+r, i*y, 0,blue);
-		//walec2(r / 10, 2*(x), x-2*h , i*y, 0, blue);
-		walec2(r / 10, -2 * x + h, x, i*y, 0, blue);
-
-		//X + h, Y, Z
-	}
-
-	szescian(-x + h, -y - r, H, x + h, 2 * (y + r), d, gray);
-	*/
-
-	Lazik rover(0, 0, 0);
+	glPushMatrix();
+	glRotatef(90, 1, 0, 0);
+	glScalef(2, 2, 2);
+	Terrain terrain;
+	terrain.draw();
+	glPopMatrix();
+	
+	
+	Lazik rover(-25, -25, 10);
 	rover.draw(); 
-
-	/*Szescian rect(0, 0, 0, 10, 10, 10);
-	rect.setColor(0, 1, 0);
-	rect.draw();
-
-	Walec cyl(0,0,40,10,15);
-	cyl.setColor(0, 1, 1);
-	cyl.draw();*/
-	//walec2(r, h, x, 0, 0);
-
-	//Uzyskanie siatki:
-	//glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-
-	//Wyrysowanie prostokata:
-	//glRectd(-10.0,-10.0,20.0,20.0);
-
+	
 	/////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////
@@ -986,8 +658,21 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		if (wParam == VK_RIGHT)
 			yRot += 5.0f;
 
+		if (wParam == VK_PRIOR)
+			zRot -= 5.0f;
+			
+		if (wParam == VK_NEXT)
+			zRot += 5.0f;
+			
+		if (wParam == VK_SUBTRACT)
+			zoom -= 3;
+			
+		if (wParam == VK_ADD)
+			zoom += 3;
+
 		xRot = (const int)xRot % 360;
 		yRot = (const int)yRot % 360;
+		zRot = (const int)zRot % 360;
 
 		InvalidateRect(hWnd, NULL, FALSE);
 	}

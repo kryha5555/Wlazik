@@ -43,7 +43,10 @@
       <Filter>Source Files\Figury</Filter>
     </ClCompile>
     <ClCompile Include="src\TriangularPrism.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Figury</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Terrain.cpp">
+      <Filter>Source Files\Lazik</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -63,7 +66,13 @@
       <Filter>Header Files\Figury</Filter>
     </ClInclude>
     <ClInclude Include="include\TriangularPrism.h">
+      <Filter>Header Files\Figury</Filter>
+    </ClInclude>
+    <ClInclude Include="include\OBJ_Loader.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Terrain.h">
+      <Filter>Header Files\Lazik</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

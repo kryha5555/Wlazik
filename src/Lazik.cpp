@@ -277,6 +277,24 @@ void Lazik::draw()
 	platformTopFront.setColor(0.22f, 0.72f, 0.80f);
 
 	platformTopFront.draw(-90, 0, 1, 0);
+
+	// drawing floor
+	//Szescian floor(-10000, -10000, -wheelRadius, 20000, 20000, 0.1);
+	//floor.setColor(0.59f, 0.27f, 0.08f);
+	//floor.draw();
+
+	TriangularPrism kamien(
+		-20,
+		-20,
+		-wheelRadius,
+		15,
+		20,
+		30
+	);
+
+	kamien.setColor(0.6, 0.6, 0.6);
+	//kamien.draw(-90,0,1,0);
+
 }
 
 void Lazik::setParams()
@@ -302,7 +320,7 @@ void Lazik::setParams()
 	camerazlen = platformThickness / 3;
 
 	radioStandRadius = axleRadius;
-	radioStandHeight = 4 * radioStandRadius;
+	radioStandHeight = 8 * radioStandRadius;
 	radioTopRadius = radioStandRadius * 2;
 	radioTopHeight = radioStandHeight / 2;
 
