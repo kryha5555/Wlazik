@@ -33,7 +33,7 @@
 #include <stdio.h>
 #include "resource.h"           // About box resource identifiers.
 #include "include/Lazik.h"
-#include "include/Terrain.h";
+#include "include/Terrain.h"
 
 #define glRGB(x, y, z)	glColor3ub((GLubyte)x, (GLubyte)y, (GLubyte)z)
 #define BITMAP_ID 0x4D42		// identyfikator formatu BMP
@@ -50,11 +50,17 @@ static HINSTANCE hInstance;
 static GLfloat xRot = 0.0f;
 static GLfloat yRot = 0.0f;
 static GLfloat zRot = 0.0f;
+static GLfloat rotSpeed = 5.0f;
 
-static GLfloat zoom;
+static GLfloat zoom = 0.0f;
+static GLfloat fov = 1000.0f;
 static GLsizei lastHeight;
 static GLsizei lastWidth;
 
+static GLfloat cameraX = 0.0f;
+static GLfloat cameraY = 0.0f;
+static GLfloat cameraZ = 200.0f;
+static GLfloat cameraSpeed = 15.0f;
 // Opis tekstury
 BITMAPINFOHEADER	bitmapInfoHeader;	// nag³ówek obrazu
 unsigned char*		bitmapData;			// dane tekstury
@@ -148,15 +154,15 @@ void ChangeSize(GLsizei w, GLsizei h)
 	glLoadIdentity();
 
 	// Establish clipping volume (left, right, bottom, top, near, far)
+	/*
 	if (w <= h)
 		glOrtho(-nRange, nRange, -nRange * h / w, nRange*h / w, -nRange, nRange);
 	else
 		glOrtho(-nRange * w / h, nRange*w / h, -nRange, nRange, -nRange, nRange);
-
+	*/
 	// Establish perspective: 
-	
-	//gluPerspective(60.0f,fAspect,1.0,400);
 
+	gluPerspective(60.0f, fAspect, 1.0, fov);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 }
@@ -279,38 +285,35 @@ unsigned char *LoadBitmapFile(char *filename, BITMAPINFOHEADER *bitmapInfoHeader
 void RenderScene(void)
 {
 	//float normal[3];	// Storeage for calculated surface normal
-
 	// Clear the window with current clearing color
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//Sposób na odróŸnienie "przedniej" i "tylniej" œciany wielok¹ta:
+	//glPolygonMode(GL_FRONT, GL_LINE);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 	// Save the matrix state and do the rotations
 	glPushMatrix();
+
 	glRotatef(xRot, 1.0f, 0.0f, 0.0f);
 	glRotatef(yRot, 0.0f, 1.0f, 0.0f);
 	glRotatef(zRot, 0.0f, 0.0f, 1.0f);
 	glRotatef(zoom, 0, 0, 0);
 
-	/////////////////////////////////////////////////////////////////
-	// MIEJSCE NA KOD OPENGL DO TWORZENIA WLASNYCH SCEN:		   //
-	/////////////////////////////////////////////////////////////////
-
-	//Sposób na odróŸnienie "przedniej" i "tylniej" œciany wielok¹ta:
-	//glPolygonMode(GL_FRONT, GL_LINE);
-
+	gluLookAt(cameraX, cameraY, cameraZ, 0 + cameraX, 0 + cameraY, 0.0, 0.0, 1.0, 0.0);
+	
 	glPushMatrix();
+
 	glRotatef(90, 1, 0, 0);
 	glScalef(2, 2, 2);
+
 	Terrain terrain;
 	terrain.draw();
+
 	glPopMatrix();
-	
-	
+
 	Lazik rover(-25, -25, 10);
-	rover.draw(); 
-	
-	/////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////
+	rover.draw();
+
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 
@@ -647,28 +650,49 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 	case WM_KEYDOWN:
 	{
 		if (wParam == VK_UP)
-			xRot -= 5.0f;
+			xRot -= rotSpeed;
 
 		if (wParam == VK_DOWN)
-			xRot += 5.0f;
+			xRot += rotSpeed;
 
 		if (wParam == VK_LEFT)
-			yRot -= 5.0f;
+			yRot -= rotSpeed;
 
 		if (wParam == VK_RIGHT)
-			yRot += 5.0f;
+			yRot += rotSpeed;
 
 		if (wParam == VK_PRIOR)
-			zRot -= 5.0f;
-			
+			zRot -= rotSpeed;
+
 		if (wParam == VK_NEXT)
-			zRot += 5.0f;
-			
+			zRot += rotSpeed;
+
 		if (wParam == VK_SUBTRACT)
-			zoom -= 3;
-			
+			zoom += rotSpeed;
+
 		if (wParam == VK_ADD)
-			zoom += 3;
+			zoom -= rotSpeed;
+
+		if (wParam == 'W')
+			cameraY += cameraSpeed;
+
+		if (wParam == 'S')
+			cameraY -= cameraSpeed;
+
+		if (wParam == 'A')
+			cameraX -= cameraSpeed;
+
+		if (wParam == 'D')
+			cameraX += cameraSpeed;
+
+		if (wParam == 'Q')
+			cameraZ -= cameraSpeed;
+
+		if (wParam == 'E')
+			cameraZ += cameraSpeed;
+
+		zoom >= 80 ? zoom = 80 : zoom;
+		zoom <= 0 ? zoom = 0 : zoom;
 
 		xRot = (const int)xRot % 360;
 		yRot = (const int)yRot % 360;
