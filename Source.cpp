@@ -9,7 +9,7 @@
 #ifdef _MSC_VER                         // Check if MS Visual C compiler
 #  pragma comment(lib, "opengl32.lib")  // Compiler-specific directive to avoid manually configuration
 #  pragma comment(lib, "glu32.lib")     // Link libraries
-#  pragma comment(lib, "lib/glew32.lib") 
+//#  pragma comment(lib, "lib/glew32.lib") 
 #endif
 
 
@@ -67,11 +67,12 @@ static GLfloat cameraX = 0.0f;
 static GLfloat cameraY = 0.0f;
 static GLfloat cameraZ = 200.0f;
 static GLfloat cameraSpeed = 15.0f;
+
 // Opis tekstury
 BITMAPINFOHEADER	bitmapInfoHeader;	// nag³ówek obrazu
 unsigned char*		bitmapData;			// dane tekstury
 unsigned int		texture[2];			// obiekt tekstury
-
+unsigned int tekstury[1];
 
 // Declaration for Window procedure
 LRESULT CALLBACK WndProc(HWND    hWnd,
@@ -137,7 +138,29 @@ void calcNormal(float v[3][3], float out[3])
 	ReduceToUnit(out);
 }
 
+unsigned int LoadTexture(const char* file, GLenum textureSlot)
+{
+	GLuint texHandle;
+	// Copy file to OpenGL
+	glGenTextures(textureSlot, &texHandle);
+	glBindTexture(GL_TEXTURE_2D, texHandle);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
+	int width, height, nrChannels;
+	const auto data = stbi_load(file, &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		gluBuild2DMipmaps(GL_TEXTURE_2D, nrChannels, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	}
+	else
+	{
+		// nie udalo sie zaladowac pliku
+	}
+	stbi_image_free(data);
+	return texHandle;
+}
 
 // Change viewing volume and viewport.  Called when window is resized
 void ChangeSize(GLsizei w, GLsizei h)
@@ -171,6 +194,8 @@ void ChangeSize(GLsizei w, GLsizei h)
 	gluPerspective(60.0f, fAspect, 1.0, fov);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
+
 }
 
 
@@ -218,6 +243,8 @@ void SetupRC()
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	// Black brush
 	glColor3f(0.0, 0.0, 0.0);
+
+	
 }
 
 
@@ -296,7 +323,7 @@ void RenderScene(void)
 	//Sposób na odróŸnienie "przedniej" i "tylniej" œciany wielok¹ta:
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
+	
 	// Save the matrix state and do the rotations
 	glPushMatrix();
 
@@ -312,8 +339,22 @@ void RenderScene(void)
 	glRotatef(90, 1, 0, 0);
 	glScalef(2, 2, 2);
 
+
+
 	Terrain mars("objects/mars.obj",0,0,0);
+
+
+	
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, tekstury[0]);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 	mars.draw();
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+
 
 	glPopMatrix();
 
@@ -321,10 +362,10 @@ void RenderScene(void)
 
 
 		Terrain rock("objects/rock/rock.obj", 50, -100, 4);
+		rock.setColor(0, 0, 1);
 		rock.draw();
 
-	//Terrain rock("objects/rock/rock.obj",50,-100,4);
-	//rock.draw();
+
 	glPopMatrix();
 
 
@@ -332,9 +373,15 @@ void RenderScene(void)
 
 	glScalef(0.5,0.5, 0.5);
 	Lazik rover(-25, -25, 10);
-	//rover.draw();
+	rover.draw();
+
+	
+
 
 	glPopMatrix();
+
+
+
 	glMatrixMode(GL_MODELVIEW);
 
 	// Flush drawing commands
@@ -544,12 +591,14 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		hRC = wglCreateContext(hDC);
 		wglMakeCurrent(hDC, hRC);
 		SetupRC();
-		glGenTextures(2, &texture[0]);                  // tworzy obiekt tekstury			
+		//glGenTextures(2, &texture[0]);                  // tworzy obiekt tekstury			
+
+		tekstury[0]=LoadTexture("objects/mars.png", 1);
 
 		// ³aduje pierwszy obraz tekstury:
 		//bitmapData = LoadBitmapFile("Bitmapy\\checker.bmp", &bitmapInfoHeader);
 
-		glBindTexture(GL_TEXTURE_2D, texture[0]);       // aktywuje obiekt tekstury
+	/*	glBindTexture(GL_TEXTURE_2D, texture[0]);       // aktywuje obiekt tekstury
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -560,7 +609,7 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		// tworzy obraz tekstury
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, bitmapInfoHeader.biWidth,
 			bitmapInfoHeader.biHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, bitmapData);
-
+		
 		if (bitmapData)
 			free(bitmapData);
 
@@ -580,7 +629,7 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 
 		if (bitmapData)
 			free(bitmapData);
-
+			*/
 		// ustalenie sposobu mieszania tekstury z t³em
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		break;
