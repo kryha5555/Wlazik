@@ -9,7 +9,6 @@
 #ifdef _MSC_VER                         // Check if MS Visual C compiler
 #  pragma comment(lib, "opengl32.lib")  // Compiler-specific directive to avoid manually configuration
 #  pragma comment(lib, "glu32.lib")     // Link libraries
-//#  pragma comment(lib, "lib/glew32.lib") 
 #endif
 
 
@@ -28,7 +27,6 @@
 #   endif
 #endif
 
-#include "include/GL/glew.h"
 #include <windows.h>            // Window defines
 #include <gl\gl.h>              // OpenGL
 #include <gl\glu.h>             // GLU library
@@ -72,7 +70,7 @@ static GLfloat cameraSpeed = 15.0f;
 BITMAPINFOHEADER	bitmapInfoHeader;	// nag³ówek obrazu
 unsigned char*		bitmapData;			// dane tekstury
 unsigned int		texture[2];			// obiekt tekstury
-unsigned int tekstury[1];
+unsigned int tekstury[3];
 
 // Declaration for Window procedure
 LRESULT CALLBACK WndProc(HWND    hWnd,
@@ -244,7 +242,7 @@ void SetupRC()
 	// Black brush
 	glColor3f(0.0, 0.0, 0.0);
 
-	
+
 }
 
 
@@ -323,64 +321,78 @@ void RenderScene(void)
 	//Sposób na odróŸnienie "przedniej" i "tylniej" œciany wielok¹ta:
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	
+
 	// Save the matrix state and do the rotations
+
 	glPushMatrix();
 
 	glRotatef(xRot, 1.0f, 0.0f, 0.0f);
 	glRotatef(yRot, 0.0f, 1.0f, 0.0f);
 	glRotatef(zRot, 0.0f, 0.0f, 1.0f);
 	glRotatef(zoom, 0, 0, 0);
-
 	gluLookAt(cameraX, cameraY, cameraZ, 0 + cameraX, 0 + cameraY, 0.0, 0.0, 1.0, 0.0);
-	
+
 	glPushMatrix();
 
 	glRotatef(90, 1, 0, 0);
 	glScalef(2, 2, 2);
-
-
-
-	Terrain mars("objects/mars.obj",0,0,0);
-
-
-	
+	Terrain mars("objects/mars.obj", 0, 0, 0);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, tekstury[0]);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
 	mars.draw();
-	glEnd();
 	glDisable(GL_TEXTURE_2D);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-
-
 	glPopMatrix();
+
 
 	glPushMatrix();
 
-
-		Terrain rock("objects/rock/rock.obj", 50, -100, 4);
-		rock.setColor(0, 0, 1);
-		rock.draw();
-
+	Terrain rock("objects/rock/rock.obj", 50, -100, 4);
+	rock.setColor(0.89, 0.44, 0.1);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, tekstury[1]);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	rock.draw();
+	glDisable(GL_TEXTURE_2D);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	glPopMatrix();
 
 
+	glPushMatrix();
+
+	Terrain rock2("objects/rock2/rock2.obj", 200, 0, 15);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, tekstury[2]);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	rock2.setColor(0.59, 0.27, 0.08);
+	rock2.draw();
+	glDisable(GL_TEXTURE_2D);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	glPopMatrix();
 
 
-	glScalef(0.5,0.5, 0.5);
+	glPushMatrix();
+
+	Terrain rock3("objects/rock3/rock3.obj", 300, -200, 35);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, tekstury[3]);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	rock3.setColor(0.59, 0.27, 0.08);
+	rock3.draw();
+	glDisable(GL_TEXTURE_2D);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	glPopMatrix();
+
+	glScalef(0.5, 0.5, 0.5);
 	Lazik rover(-25, -25, 10);
 	rover.draw();
 
-	
-
-
 	glPopMatrix();
-
-
 
 	glMatrixMode(GL_MODELVIEW);
 
@@ -593,8 +605,10 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		SetupRC();
 		//glGenTextures(2, &texture[0]);                  // tworzy obiekt tekstury			
 
-		tekstury[0]=LoadTexture("objects/mars.png", 1);
-
+		tekstury[0] = LoadTexture("objects/mars.png", 1);
+		tekstury[1] = LoadTexture("objects/rock/rock.png", 1);
+		tekstury[2] = LoadTexture("objects/rock2/rock2.png", 1);
+		tekstury[3] = LoadTexture("objects/rock3/rock3.png", 1);
 		// ³aduje pierwszy obraz tekstury:
 		//bitmapData = LoadBitmapFile("Bitmapy\\checker.bmp", &bitmapInfoHeader);
 
@@ -609,7 +623,7 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		// tworzy obraz tekstury
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, bitmapInfoHeader.biWidth,
 			bitmapInfoHeader.biHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, bitmapData);
-		
+
 		if (bitmapData)
 			free(bitmapData);
 
@@ -630,7 +644,7 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		if (bitmapData)
 			free(bitmapData);
 			*/
-		// ustalenie sposobu mieszania tekstury z t³em
+			// ustalenie sposobu mieszania tekstury z t³em
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		break;
 
