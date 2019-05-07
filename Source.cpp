@@ -2,7 +2,7 @@
 //Wy³šczanie b³êdów przed "fopen"
 #define  _CRT_SECURE_NO_WARNINGS
 
-
+#define STB_IMAGE_IMPLEMENTATION
 
 // £adowanie bibliotek:
 
@@ -26,6 +26,7 @@
 #      undef UNICODE 
 #   endif
 #endif
+
 #include <windows.h>            // Window defines
 #include <gl\gl.h>              // OpenGL
 #include <gl\glu.h>             // GLU library
@@ -33,7 +34,10 @@
 #include <stdio.h>
 #include "resource.h"           // About box resource identifiers.
 #include "include/Lazik.h"
-#include "include/Terrain.h";
+#include "include/Terrain.h"
+
+#include "include/stb_image.h"
+
 
 #define glRGB(x, y, z)	glColor3ub((GLubyte)x, (GLubyte)y, (GLubyte)z)
 #define BITMAP_ID 0x4D42		// identyfikator formatu BMP
@@ -50,16 +54,23 @@ static HINSTANCE hInstance;
 static GLfloat xRot = 0.0f;
 static GLfloat yRot = 0.0f;
 static GLfloat zRot = 0.0f;
+static GLfloat rotSpeed = 5.0f;
 
-static GLfloat zoom;
+static GLfloat zoom = 0.0f;
+static GLfloat fov = 2000.0f;
 static GLsizei lastHeight;
 static GLsizei lastWidth;
+
+static GLfloat cameraX = 0.0f;
+static GLfloat cameraY = 0.0f;
+static GLfloat cameraZ = 200.0f;
+static GLfloat cameraSpeed = 15.0f;
 
 // Opis tekstury
 BITMAPINFOHEADER	bitmapInfoHeader;	// nag³ówek obrazu
 unsigned char*		bitmapData;			// dane tekstury
 unsigned int		texture[2];			// obiekt tekstury
-
+unsigned int tekstury[3];
 
 // Declaration for Window procedure
 LRESULT CALLBACK WndProc(HWND    hWnd,
@@ -125,7 +136,29 @@ void calcNormal(float v[3][3], float out[3])
 	ReduceToUnit(out);
 }
 
+unsigned int LoadTexture(const char* file, GLenum textureSlot)
+{
+	GLuint texHandle;
+	// Copy file to OpenGL
+	glGenTextures(textureSlot, &texHandle);
+	glBindTexture(GL_TEXTURE_2D, texHandle);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
+	int width, height, nrChannels;
+	const auto data = stbi_load(file, &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		gluBuild2DMipmaps(GL_TEXTURE_2D, nrChannels, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	}
+	else
+	{
+		// nie udalo sie zaladowac pliku
+	}
+	stbi_image_free(data);
+	return texHandle;
+}
 
 // Change viewing volume and viewport.  Called when window is resized
 void ChangeSize(GLsizei w, GLsizei h)
@@ -148,17 +181,19 @@ void ChangeSize(GLsizei w, GLsizei h)
 	glLoadIdentity();
 
 	// Establish clipping volume (left, right, bottom, top, near, far)
+	/*
 	if (w <= h)
 		glOrtho(-nRange, nRange, -nRange * h / w, nRange*h / w, -nRange, nRange);
 	else
 		glOrtho(-nRange * w / h, nRange*w / h, -nRange, nRange, -nRange, nRange);
-
+	*/
 	// Establish perspective: 
-	
-	//gluPerspective(60.0f,fAspect,1.0,400);
 
+	gluPerspective(60.0f, fAspect, 1.0, fov);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
+
 }
 
 
@@ -206,6 +241,8 @@ void SetupRC()
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	// Black brush
 	glColor3f(0.0, 0.0, 0.0);
+
+
 }
 
 
@@ -279,39 +316,84 @@ unsigned char *LoadBitmapFile(char *filename, BITMAPINFOHEADER *bitmapInfoHeader
 void RenderScene(void)
 {
 	//float normal[3];	// Storeage for calculated surface normal
-
 	// Clear the window with current clearing color
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//Sposób na odróŸnienie "przedniej" i "tylniej" œciany wielok¹ta:
+	//glPolygonMode(GL_FRONT, GL_LINE);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 	// Save the matrix state and do the rotations
+
 	glPushMatrix();
+
 	glRotatef(xRot, 1.0f, 0.0f, 0.0f);
 	glRotatef(yRot, 0.0f, 1.0f, 0.0f);
 	glRotatef(zRot, 0.0f, 0.0f, 1.0f);
 	glRotatef(zoom, 0, 0, 0);
-
-	/////////////////////////////////////////////////////////////////
-	// MIEJSCE NA KOD OPENGL DO TWORZENIA WLASNYCH SCEN:		   //
-	/////////////////////////////////////////////////////////////////
-
-	//Sposób na odróŸnienie "przedniej" i "tylniej" œciany wielok¹ta:
-	//glPolygonMode(GL_FRONT, GL_LINE);
+	gluLookAt(cameraX, cameraY, cameraZ, 0 + cameraX, 0 + cameraY, 0.0, 0.0, 1.0, 0.0);
 
 	glPushMatrix();
+
 	glRotatef(90, 1, 0, 0);
 	glScalef(2, 2, 2);
-	Terrain terrain;
-	terrain.draw();
+	Terrain mars("objects/mars.obj", 0, 0, 0);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, tekstury[0]);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	mars.draw();
+	glDisable(GL_TEXTURE_2D);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 	glPopMatrix();
-	
-	
+
+
+	glPushMatrix();
+
+	Terrain rock("objects/rock/rock.obj", 50, -100, 4);
+	rock.setColor(0.89, 0.44, 0.1);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, tekstury[1]);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	rock.draw();
+	glDisable(GL_TEXTURE_2D);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	glPopMatrix();
+
+
+	glPushMatrix();
+
+	Terrain rock2("objects/rock2/rock2.obj", 200, 0, 15);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, tekstury[2]);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	rock2.setColor(0.59, 0.27, 0.08);
+	rock2.draw();
+	glDisable(GL_TEXTURE_2D);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	glPopMatrix();
+
+
+	glPushMatrix();
+
+	Terrain rock3("objects/rock3/rock3.obj", 300, -200, 35);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, tekstury[3]);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	rock3.setColor(0.59, 0.27, 0.08);
+	rock3.draw();
+	glDisable(GL_TEXTURE_2D);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	glPopMatrix();
+
+	glScalef(0.5, 0.5, 0.5);
 	Lazik rover(-25, -25, 10);
-	rover.draw(); 
-	
-	/////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////
+	rover.draw();
+
 	glPopMatrix();
+
 	glMatrixMode(GL_MODELVIEW);
 
 	// Flush drawing commands
@@ -521,12 +603,16 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		hRC = wglCreateContext(hDC);
 		wglMakeCurrent(hDC, hRC);
 		SetupRC();
-		glGenTextures(2, &texture[0]);                  // tworzy obiekt tekstury			
+		//glGenTextures(2, &texture[0]);                  // tworzy obiekt tekstury			
 
+		tekstury[0] = LoadTexture("objects/mars.png", 1);
+		tekstury[1] = LoadTexture("objects/rock/rock.png", 1);
+		tekstury[2] = LoadTexture("objects/rock2/rock2.png", 1);
+		tekstury[3] = LoadTexture("objects/rock3/rock3.png", 1);
 		// ³aduje pierwszy obraz tekstury:
 		//bitmapData = LoadBitmapFile("Bitmapy\\checker.bmp", &bitmapInfoHeader);
 
-		glBindTexture(GL_TEXTURE_2D, texture[0]);       // aktywuje obiekt tekstury
+	/*	glBindTexture(GL_TEXTURE_2D, texture[0]);       // aktywuje obiekt tekstury
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -557,8 +643,8 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 
 		if (bitmapData)
 			free(bitmapData);
-
-		// ustalenie sposobu mieszania tekstury z t³em
+			*/
+			// ustalenie sposobu mieszania tekstury z t³em
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		break;
 
@@ -647,28 +733,49 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 	case WM_KEYDOWN:
 	{
 		if (wParam == VK_UP)
-			xRot -= 5.0f;
+			xRot -= rotSpeed;
 
 		if (wParam == VK_DOWN)
-			xRot += 5.0f;
+			xRot += rotSpeed;
 
 		if (wParam == VK_LEFT)
-			yRot -= 5.0f;
+			yRot -= rotSpeed;
 
 		if (wParam == VK_RIGHT)
-			yRot += 5.0f;
+			yRot += rotSpeed;
 
-		if (wParam == VK_PRIOR)
-			zRot -= 5.0f;
-			
-		if (wParam == VK_NEXT)
-			zRot += 5.0f;
-			
+		if (wParam == 'Q')
+			zRot -= rotSpeed;
+
+		if (wParam == 'E')
+			zRot += rotSpeed;
+
 		if (wParam == VK_SUBTRACT)
-			zoom -= 3;
-			
+			zoom += rotSpeed;
+
 		if (wParam == VK_ADD)
-			zoom += 3;
+			zoom -= rotSpeed;
+
+		if (wParam == 'W')
+			cameraY += cameraSpeed;
+
+		if (wParam == 'S')
+			cameraY -= cameraSpeed;
+
+		if (wParam == 'A')
+			cameraX -= cameraSpeed;
+
+		if (wParam == 'D')
+			cameraX += cameraSpeed;
+
+		if (wParam == VK_CONTROL)
+			cameraZ -= cameraSpeed;
+
+		if (wParam == VK_SHIFT)
+			cameraZ += cameraSpeed;
+
+		zoom >= 80 ? zoom = 80 : zoom;
+		zoom <= 0 ? zoom = 0 : zoom;
 
 		xRot = (const int)xRot % 360;
 		yRot = (const int)yRot % 360;

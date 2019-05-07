@@ -14,7 +14,7 @@ public:
 
 	//TODO: Rename to be more recognizable
 	GLfloat xpos, ypos, zpos;
-	GLfloat color[3] = { 0,0,0};
+	GLfloat color[3] = { 1,1,1};
 
 
 };
