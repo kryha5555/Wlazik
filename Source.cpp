@@ -2,13 +2,14 @@
 //Wy³šczanie b³êdów przed "fopen"
 #define  _CRT_SECURE_NO_WARNINGS
 
-
+#define STB_IMAGE_IMPLEMENTATION
 
 // £adowanie bibliotek:
 
 #ifdef _MSC_VER                         // Check if MS Visual C compiler
 #  pragma comment(lib, "opengl32.lib")  // Compiler-specific directive to avoid manually configuration
 #  pragma comment(lib, "glu32.lib")     // Link libraries
+#  pragma comment(lib, "lib/glew32.lib") 
 #endif
 
 
@@ -26,6 +27,8 @@
 #      undef UNICODE 
 #   endif
 #endif
+
+#include "include/GL/glew.h"
 #include <windows.h>            // Window defines
 #include <gl\gl.h>              // OpenGL
 #include <gl\glu.h>             // GLU library
@@ -34,6 +37,9 @@
 #include "resource.h"           // About box resource identifiers.
 #include "include/Lazik.h"
 #include "include/Terrain.h"
+
+#include "include/stb_image.h"
+
 
 #define glRGB(x, y, z)	glColor3ub((GLubyte)x, (GLubyte)y, (GLubyte)z)
 #define BITMAP_ID 0x4D42		// identyfikator formatu BMP
@@ -53,7 +59,7 @@ static GLfloat zRot = 0.0f;
 static GLfloat rotSpeed = 5.0f;
 
 static GLfloat zoom = 0.0f;
-static GLfloat fov = 1000.0f;
+static GLfloat fov = 2000.0f;
 static GLsizei lastHeight;
 static GLsizei lastWidth;
 
@@ -306,13 +312,27 @@ void RenderScene(void)
 	glRotatef(90, 1, 0, 0);
 	glScalef(2, 2, 2);
 
-	Terrain terrain;
-	terrain.draw();
+	Terrain mars("objects/mars.obj",0,0,0);
+	mars.draw();
 
 	glPopMatrix();
 
+	glPushMatrix();
+
+
+		Terrain rock("objects/rock/rock.obj", 50, -100, 4);
+		rock.draw();
+
+	//Terrain rock("objects/rock/rock.obj",50,-100,4);
+	//rock.draw();
+	glPopMatrix();
+
+
+
+
+	glScalef(0.5,0.5, 0.5);
 	Lazik rover(-25, -25, 10);
-	rover.draw();
+	//rover.draw();
 
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
@@ -661,10 +681,10 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		if (wParam == VK_RIGHT)
 			yRot += rotSpeed;
 
-		if (wParam == VK_PRIOR)
+		if (wParam == 'Q')
 			zRot -= rotSpeed;
 
-		if (wParam == VK_NEXT)
+		if (wParam == 'E')
 			zRot += rotSpeed;
 
 		if (wParam == VK_SUBTRACT)
@@ -685,10 +705,10 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		if (wParam == 'D')
 			cameraX += cameraSpeed;
 
-		if (wParam == 'Q')
+		if (wParam == VK_CONTROL)
 			cameraZ -= cameraSpeed;
 
-		if (wParam == 'E')
+		if (wParam == VK_SHIFT)
 			cameraZ += cameraSpeed;
 
 		zoom >= 80 ? zoom = 80 : zoom;
