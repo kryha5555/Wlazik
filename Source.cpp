@@ -54,7 +54,8 @@ static HINSTANCE hInstance;
 static GLfloat xRot = 0.0f;
 static GLfloat yRot = 0.0f;
 static GLfloat zRot = 0.0f;
-static GLfloat rotSpeed = 5.0f;
+static GLfloat zRot_old = zRot;
+static GLfloat rotSpeed = 45.0f;
 
 static GLfloat zoom = 0.0f;
 static GLfloat fov = 2000.0f;
@@ -63,8 +64,12 @@ static GLsizei lastWidth;
 
 static GLfloat cameraX = 0.0f;
 static GLfloat cameraY = 0.0f;
-static GLfloat cameraZ = 200.0f;
+static GLfloat cameraZ = 0.0f;
 static GLfloat cameraSpeed = 15.0f;
+std::vector<GLfloat> cameraPos{ 0.0f,0.0f,0.0f,0.0f };
+
+
+Lazik rover(-25, -25, 10);
 
 // Opis tekstury
 BITMAPINFOHEADER	bitmapInfoHeader;	// nag³ówek obrazu
@@ -326,11 +331,34 @@ void RenderScene(void)
 
 	glPushMatrix();
 
-	glRotatef(xRot, 1.0f, 0.0f, 0.0f);
-	glRotatef(yRot, 0.0f, 1.0f, 0.0f);
-	glRotatef(zRot, 0.0f, 0.0f, 1.0f);
-	glRotatef(zoom, 0, 0, 0);
-	gluLookAt(cameraX, cameraY, cameraZ, 0 + cameraX, 0 + cameraY, 0.0, 0.0, 1.0, 0.0);
+	//glRotatef(xRot, 1.0f, 0.0f, 0.0f);
+	//glRotatef(yRot, 0.0f, 1.0f, 0.0f);
+	//glRotatef(zRot, 0.0f, 0.0f, 1.0f);
+	//glRotatef(zoom, 0, 0, 0);
+
+	gluLookAt(
+		cameraY*sin(-zRot * GL_PI / 180),
+		cameraY*cos(zRot * GL_PI / 180) - 200,
+		200,
+		cameraY*sin(-zRot * GL_PI / 180),
+		cameraY*cos(zRot * GL_PI / 180),
+		0.0,
+		0.0,
+		1.0,
+		0.0
+	);
+
+	/*gluLookAt(
+		cameraX,
+		cameraY - 200,
+		200,
+		cameraX,
+		cameraY,
+		0.0,
+		0.0,
+		1.0,
+		0.0
+	);*/
 
 	glPushMatrix();
 
@@ -388,9 +416,37 @@ void RenderScene(void)
 
 	glPopMatrix();
 
+
+	//sin(zRot*GL_PI / 180)
+
+	/*
+	glRotatef(zRot, 0.0f, 0.0f, 1.0f);
+	glTranslatef(
+		cameraX,
+		cameraY,
+		cameraZ
+	);
+	*/
+	
+	
+	glTranslatef(
+		cameraY*sin(-zRot * GL_PI / 180),
+		cameraY*cos(zRot * GL_PI / 180),
+		cameraZ
+	);
+	glRotatef(zRot, 0.0f, 0.0f, 1.0f);
+	
+
 	glScalef(0.5, 0.5, 0.5);
-	Lazik rover(-25, -25, 10);
+
+	zRot_old = zRot;
+
+
+
+	//Lazik rover(-25, -25, 10);
 	rover.draw();
+
+	//cameraPos = rover.getPos();
 
 	glPopMatrix();
 
@@ -603,6 +659,9 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		hRC = wglCreateContext(hDC);
 		wglMakeCurrent(hDC, hRC);
 		SetupRC();
+
+
+		//gluLookAt(cameraX, cameraY, cameraZ, 0 + cameraX, 0 + cameraY, 0.0, 0.0, 1.0, 0.0);
 		//glGenTextures(2, &texture[0]);                  // tworzy obiekt tekstury			
 
 		tekstury[0] = LoadTexture("objects/mars.png", 1);
@@ -745,10 +804,10 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 			yRot += rotSpeed;
 
 		if (wParam == 'Q')
-			zRot -= rotSpeed;
+			zRot += rotSpeed;
 
 		if (wParam == 'E')
-			zRot += rotSpeed;
+			zRot -= rotSpeed;
 
 		if (wParam == VK_SUBTRACT)
 			zoom += rotSpeed;

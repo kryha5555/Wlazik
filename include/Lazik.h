@@ -16,6 +16,7 @@ public:
 
 	void draw();
 	void setParams();
+	std::vector<GLfloat> getPos();
 
 private:
 	//TODO: Renaming to platformXlen etc.
