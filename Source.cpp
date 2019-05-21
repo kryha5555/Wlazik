@@ -47,24 +47,38 @@
 HPALETTE hPalette = NULL;
 
 // Application name and instance storeage
-static LPCTSTR lpszAppName = "GL Template";
+static LPCTSTR lpszAppName = "W³azik";
 static HINSTANCE hInstance;
 
 // Rotation amounts
-static GLfloat xRot = 0.0f;
-static GLfloat yRot = 0.0f;
-static GLfloat zRot = 0.0f;
-static GLfloat rotSpeed = 5.0f;
+static GLfloat rotAngle = 0.0f;
+static GLfloat rotSpeed = 15.0f;
+static GLfloat swingRadius = 0.0f;
 
-static GLfloat zoom = 0.0f;
 static GLfloat fov = 2000.0f;
 static GLsizei lastHeight;
 static GLsizei lastWidth;
 
-static GLfloat cameraX = 0.0f;
-static GLfloat cameraY = 0.0f;
-static GLfloat cameraZ = 200.0f;
-static GLfloat cameraSpeed = 15.0f;
+static GLfloat posX = 0.0f;
+static GLfloat posY = 0.0f;
+static GLfloat posZ = 10.0f;
+
+static GLfloat const_velocity = 1.0f;
+static GLfloat velocityL = 0.0f;
+static GLfloat velocityR = 0.0f;
+static GLfloat velocity = 0.0f;
+static GLfloat momentumConst = 0.2*const_velocity;
+bool velocityUpdate = 0;
+//std::vector<GLfloat> midPointLocation{ 0.0f,0.0f,0.0f,0.0f };
+std::vector<GLfloat> midPointLocation{ 0.0f,0.0f,0.0f };
+std::vector<GLfloat> midPointLocationScaled{ 0,0,0 };
+
+Lazik rover(0, 0, 10);
+
+Terrain mars("objects/mars.obj", 0, 0, 0);
+Terrain rock("objects/rock/rock.obj", 50, -100, 4);
+Terrain rock2("objects/rock2/rock2.obj", 200, 0, 15);
+Terrain rock3("objects/rock3/rock3.obj", 300, -200, 35);
 
 // Opis tekstury
 BITMAPINFOHEADER	bitmapInfoHeader;	// nag³ówek obrazu
@@ -326,17 +340,51 @@ void RenderScene(void)
 
 	glPushMatrix();
 
-	glRotatef(xRot, 1.0f, 0.0f, 0.0f);
-	glRotatef(yRot, 0.0f, 1.0f, 0.0f);
-	glRotatef(zRot, 0.0f, 0.0f, 1.0f);
-	glRotatef(zoom, 0, 0, 0);
-	gluLookAt(cameraX, cameraY, cameraZ, 0 + cameraX, 0 + cameraY, 0.0, 0.0, 1.0, 0.0);
+	if (velocityUpdate)
+	{
+		velocity = (velocityL + velocityR) / 2;
+		velocityUpdate = 0;
+	}
+
+	if (velocityL != velocityR)
+	{
+		if (swingRadius = rover.getAxleTrack()*(velocityL + velocityR) / (2 * (velocityL - velocityR))) // to je swing radius a nie swing angle xD
+			rotAngle = atan2(swingRadius, 0) - atan2(swingRadius, velocity);
+			//rotAngle = asin(velocity / swingRadius);
+
+	}
+	else if (velocityL==0)
+		rotAngle = 0;
+
+
+
+
+
+
+
+
+
+	posX += velocity * sin(-rotAngle); // Obliczanie nowej pozycji w osi x; X = x_0 + v*t; gdzie t = sin(-a);
+	posY += velocity * cos(rotAngle);// Obliczanie nowej pozycji w osi y; Y = y_0 + v*t; gdzie t = cos(a);
+
+	gluLookAt(
+		posX, // eye X
+		posY - 200, // eye Y
+		posZ + 200, // eye Z
+		posX, // center X
+		posY, // center Y
+		posZ, // center Z
+		0.0,
+		1.0,
+		0.0
+	);
+
 
 	glPushMatrix();
 
 	glRotatef(90, 1, 0, 0);
 	glScalef(2, 2, 2);
-	Terrain mars("objects/mars.obj", 0, 0, 0);
+
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, tekstury[0]);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -349,7 +397,7 @@ void RenderScene(void)
 
 	glPushMatrix();
 
-	Terrain rock("objects/rock/rock.obj", 50, -100, 4);
+
 	rock.setColor(0.89, 0.44, 0.1);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, tekstury[1]);
@@ -363,7 +411,7 @@ void RenderScene(void)
 
 	glPushMatrix();
 
-	Terrain rock2("objects/rock2/rock2.obj", 200, 0, 15);
+
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, tekstury[2]);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -374,10 +422,8 @@ void RenderScene(void)
 
 	glPopMatrix();
 
-
 	glPushMatrix();
 
-	Terrain rock3("objects/rock3/rock3.obj", 300, -200, 35);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, tekstury[3]);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -388,9 +434,64 @@ void RenderScene(void)
 
 	glPopMatrix();
 
+	glPushMatrix();
+
+
+
+	glTranslatef(posX, posY, posZ); // translacja o wektory przemieszczenia obliczone wy¿ej
+
+
+	if (velocity > 0)
+	{
+		if (velocity - momentumConst > 0)
+			velocity -= momentumConst;
+		else velocityL = velocityR = velocity = 0;
+	}
+	else
+	{
+		if (velocity + momentumConst < 0)
+			velocity += momentumConst;
+		else velocityL = velocityR = velocity = 0;
+	}
+	/*if (velocityL > 0)
+	{
+		if (velocityL - momentumConst > 0)
+			velocityL -= momentumConst;
+		else velocityL = 0;
+	}
+	else
+	{
+		if (velocityL + momentumConst < 0)
+			velocityL += momentumConst;
+		else velocityL = 0;
+	}
+
+
+	if (velocityR > 0)
+	{
+		if (velocityR - momentumConst > 0)
+			velocityR -= momentumConst;
+		else velocityR = 0;
+	}
+	else
+	{
+		if (velocityR + momentumConst < 0)
+			velocityR += momentumConst;
+		else velocityR = 0;
+	}*/
+
+
+	midPointLocationScaled = { midPointLocation[0] / 2,midPointLocation[1] / 2 ,midPointLocation[2] }; // trzeba podzieliæ przez 2 bo skalujemy razy 0.5 
+
+	glTranslatef(midPointLocationScaled[0], midPointLocationScaled[1], midPointLocationScaled[2]); // powrót do pozycji wyjœciowej
+	glRotatef(rotAngle * 180 / GL_PI, 0.0f, 0.0f, 1.0f); // obrót wokó³ punktu 0,0 po osi Z
+	glTranslatef(-midPointLocationScaled[0], -midPointLocationScaled[1], -midPointLocationScaled[2]); // translacja do punktu 0,0
+
 	glScalef(0.5, 0.5, 0.5);
-	Lazik rover(-25, -25, 10);
+
 	rover.draw();
+
+	glPopMatrix();
 
 	glPopMatrix();
 
@@ -603,6 +704,11 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		hRC = wglCreateContext(hDC);
 		wglMakeCurrent(hDC, hRC);
 		SetupRC();
+
+		midPointLocation = rover.getPos();
+
+
+		//gluLookAt(posX, posY, posZ, 0 + posX, 0 + posY, 0.0, 0.0, 1.0, 0.0);
 		//glGenTextures(2, &texture[0]);                  // tworzy obiekt tekstury			
 
 		tekstury[0] = LoadTexture("objects/mars.png", 1);
@@ -681,7 +787,8 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		SwapBuffers(hDC);
 
 		// Validate the newly painted client area
-		ValidateRect(hWnd, NULL);
+		//ValidateRect(hWnd, NULL); // not loop
+		InvalidateRect(hWnd, NULL, FALSE); // loop
 	}
 	break;
 
@@ -732,54 +839,64 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		// Key press, check for arrow keys to do cube rotation.
 	case WM_KEYDOWN:
 	{
+
+		
+		if (wParam == 'R') // skret w prawo
+		{
+			posX = posY =velocityL=velocityR=velocity= 0;
+		}
+		if (wParam == 'W') // do przodu
+		{
+			velocityL += const_velocity;
+			velocityUpdate = 1;
+		}
+
+		if (wParam == 'S') // do tylu
+		{
+			velocityL -= const_velocity;
+			velocityUpdate = 1;
+		}
+
+		if (wParam == 'E') // do przodu
+		{
+			velocityR += const_velocity;
+			velocityUpdate = 1;
+		}
+
+		if (wParam == 'D') // do tylu
+		{
+			velocityR -= const_velocity;
+			velocityUpdate = 1;
+		}
+		if (wParam == VK_CONTROL) // w gore
+		{
+			posZ -= const_velocity;
+			velocityUpdate = 1;
+		}
+		if (wParam == VK_SHIFT) // w dol
+		{
+			posZ += const_velocity;
+			velocityUpdate = 1;
+		}
+		if (wParam == VK_SPACE)
+		{
+			velocityR = velocityL = 0;
+			velocityUpdate = 1;
+		}
+
 		if (wParam == VK_UP)
-			xRot -= rotSpeed;
+		{
+			velocityL += const_velocity;
+			velocityR += const_velocity;
+			velocityUpdate = 1;
+		}
 
 		if (wParam == VK_DOWN)
-			xRot += rotSpeed;
-
-		if (wParam == VK_LEFT)
-			yRot -= rotSpeed;
-
-		if (wParam == VK_RIGHT)
-			yRot += rotSpeed;
-
-		if (wParam == 'Q')
-			zRot -= rotSpeed;
-
-		if (wParam == 'E')
-			zRot += rotSpeed;
-
-		if (wParam == VK_SUBTRACT)
-			zoom += rotSpeed;
-
-		if (wParam == VK_ADD)
-			zoom -= rotSpeed;
-
-		if (wParam == 'W')
-			cameraY += cameraSpeed;
-
-		if (wParam == 'S')
-			cameraY -= cameraSpeed;
-
-		if (wParam == 'A')
-			cameraX -= cameraSpeed;
-
-		if (wParam == 'D')
-			cameraX += cameraSpeed;
-
-		if (wParam == VK_CONTROL)
-			cameraZ -= cameraSpeed;
-
-		if (wParam == VK_SHIFT)
-			cameraZ += cameraSpeed;
-
-		zoom >= 80 ? zoom = 80 : zoom;
-		zoom <= 0 ? zoom = 0 : zoom;
-
-		xRot = (const int)xRot % 360;
-		yRot = (const int)yRot % 360;
-		zRot = (const int)zRot % 360;
+		{
+			velocityL -= const_velocity;
+			velocityR -= const_velocity;
+			velocityUpdate = 1;
+		}
 
 		InvalidateRect(hWnd, NULL, FALSE);
 	}

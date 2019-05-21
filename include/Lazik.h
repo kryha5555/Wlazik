@@ -16,6 +16,8 @@ public:
 
 	void draw();
 	void setParams();
+	std::vector<GLfloat> getPos();
+	GLfloat getAxleTrack();
 
 private:
 	//TODO: Renaming to platformXlen etc.

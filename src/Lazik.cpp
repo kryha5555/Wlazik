@@ -333,3 +333,19 @@ void Lazik::setParams()
 	platformTopxlen = ylen - cameraxlen;
 	platformTopHeight = 1.5*platformThickness;
 }
+
+std::vector<GLfloat> Lazik::getPos()
+{
+	std::vector<GLfloat> pos;
+	pos.push_back( xpos + 2 * axleRadius + xlen / 2); 
+	pos.push_back( ypos + ylen / 2);
+	pos.push_back(zpos + platformEvelation + platformThickness + platformTopHeight);
+
+	return pos;
+}
+
+GLfloat Lazik::getAxleTrack()
+{
+	return xlen + 4 * axleRadius;
+}
+
