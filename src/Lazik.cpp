@@ -344,3 +344,8 @@ std::vector<GLfloat> Lazik::getPos()
 	return pos;
 }
 
+GLfloat Lazik::getAxleTrack()
+{
+	return xlen + 4 * axleRadius;
+}
+

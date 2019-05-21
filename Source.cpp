@@ -53,6 +53,7 @@ static HINSTANCE hInstance;
 // Rotation amounts
 static GLfloat rotAngle = 0.0f;
 static GLfloat rotSpeed = 15.0f;
+static GLfloat swingRadius = 0.0f;
 
 static GLfloat fov = 2000.0f;
 static GLsizei lastHeight;
@@ -62,9 +63,12 @@ static GLfloat posX = 0.0f;
 static GLfloat posY = 0.0f;
 static GLfloat posZ = 10.0f;
 
-static GLfloat const_velocity = 15.0f;
+static GLfloat const_velocity = 1.0f;
+static GLfloat velocityL = 0.0f;
+static GLfloat velocityR = 0.0f;
 static GLfloat velocity = 0.0f;
-
+static GLfloat momentumConst = 0.2*const_velocity;
+bool velocityUpdate = 0;
 //std::vector<GLfloat> midPointLocation{ 0.0f,0.0f,0.0f,0.0f };
 std::vector<GLfloat> midPointLocation{ 0.0f,0.0f,0.0f };
 std::vector<GLfloat> midPointLocationScaled{ 0,0,0 };
@@ -336,8 +340,32 @@ void RenderScene(void)
 
 	glPushMatrix();
 
-	posX += velocity * sin(-rotAngle * GL_PI / 180); // Obliczanie nowej pozycji w osi x; X = x_0 + v*t; gdzie t = sin(-a);
-	posY += velocity * cos(rotAngle*GL_PI / 180);// Obliczanie nowej pozycji w osi y; Y = y_0 + v*t; gdzie t = cos(a);
+	if (velocityUpdate)
+	{
+		velocity = (velocityL + velocityR) / 2;
+		velocityUpdate = 0;
+	}
+
+	if (velocityL != velocityR)
+	{
+		if (swingRadius = rover.getAxleTrack()*(velocityL + velocityR) / (2 * (velocityL - velocityR))) // to je swing radius a nie swing angle xD
+			rotAngle = atan2(swingRadius, 0) - atan2(swingRadius, velocity);
+			//rotAngle = asin(velocity / swingRadius);
+
+	}
+	else if (velocityL==0)
+		rotAngle = 0;
+
+
+
+
+
+
+
+
+
+	posX += velocity * sin(-rotAngle); // Obliczanie nowej pozycji w osi x; X = x_0 + v*t; gdzie t = sin(-a);
+	posY += velocity * cos(rotAngle);// Obliczanie nowej pozycji w osi y; Y = y_0 + v*t; gdzie t = cos(a);
 
 	gluLookAt(
 		posX, // eye X
@@ -393,9 +421,9 @@ void RenderScene(void)
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	glPopMatrix();
-	
+
 	glPushMatrix();
-	
+
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, tekstury[3]);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -405,16 +433,58 @@ void RenderScene(void)
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	glPopMatrix();
-	   
+
 	glPushMatrix();
 
+
+
 	glTranslatef(posX, posY, posZ); // translacja o wektory przemieszczenia obliczone wy¿ej
-	velocity = 0; // wyzerowanie aktualnej prêdkoœci // TODO: pêd
-	
+
+
+	if (velocity > 0)
+	{
+		if (velocity - momentumConst > 0)
+			velocity -= momentumConst;
+		else velocityL = velocityR = velocity = 0;
+	}
+	else
+	{
+		if (velocity + momentumConst < 0)
+			velocity += momentumConst;
+		else velocityL = velocityR = velocity = 0;
+	}
+	/*if (velocityL > 0)
+	{
+		if (velocityL - momentumConst > 0)
+			velocityL -= momentumConst;
+		else velocityL = 0;
+	}
+	else
+	{
+		if (velocityL + momentumConst < 0)
+			velocityL += momentumConst;
+		else velocityL = 0;
+	}
+
+
+	if (velocityR > 0)
+	{
+		if (velocityR - momentumConst > 0)
+			velocityR -= momentumConst;
+		else velocityR = 0;
+	}
+	else
+	{
+		if (velocityR + momentumConst < 0)
+			velocityR += momentumConst;
+		else velocityR = 0;
+	}*/
+
+
 	midPointLocationScaled = { midPointLocation[0] / 2,midPointLocation[1] / 2 ,midPointLocation[2] }; // trzeba podzieliæ przez 2 bo skalujemy razy 0.5 
 
 	glTranslatef(midPointLocationScaled[0], midPointLocationScaled[1], midPointLocationScaled[2]); // powrót do pozycji wyjœciowej
-	glRotatef(rotAngle, 0.0f, 0.0f, 1.0f); // obrót wokó³ punktu 0,0 po osi Z
+	glRotatef(rotAngle * 180 / GL_PI, 0.0f, 0.0f, 1.0f); // obrót wokó³ punktu 0,0 po osi Z
 	glTranslatef(-midPointLocationScaled[0], -midPointLocationScaled[1], -midPointLocationScaled[2]); // translacja do punktu 0,0
 
 	glScalef(0.5, 0.5, 0.5);
@@ -637,6 +707,7 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 
 		midPointLocation = rover.getPos();
 
+
 		//gluLookAt(posX, posY, posZ, 0 + posX, 0 + posY, 0.0, 0.0, 1.0, 0.0);
 		//glGenTextures(2, &texture[0]);                  // tworzy obiekt tekstury			
 
@@ -716,7 +787,8 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		SwapBuffers(hDC);
 
 		// Validate the newly painted client area
-		ValidateRect(hWnd, NULL);
+		//ValidateRect(hWnd, NULL); // not loop
+		InvalidateRect(hWnd, NULL, FALSE); // loop
 	}
 	break;
 
@@ -768,23 +840,63 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 	case WM_KEYDOWN:
 	{
 
-		if (wParam == 'Q') // skret w lewo
-			rotAngle += rotSpeed;
-
-		if (wParam == 'E') // skret w prawo
-			rotAngle -= rotSpeed;
-
+		
+		if (wParam == 'R') // skret w prawo
+		{
+			posX = posY =velocityL=velocityR=velocity= 0;
+		}
 		if (wParam == 'W') // do przodu
-			velocity = const_velocity;
+		{
+			velocityL += const_velocity;
+			velocityUpdate = 1;
+		}
 
 		if (wParam == 'S') // do tylu
-			velocity = -const_velocity;
+		{
+			velocityL -= const_velocity;
+			velocityUpdate = 1;
+		}
 
+		if (wParam == 'E') // do przodu
+		{
+			velocityR += const_velocity;
+			velocityUpdate = 1;
+		}
+
+		if (wParam == 'D') // do tylu
+		{
+			velocityR -= const_velocity;
+			velocityUpdate = 1;
+		}
 		if (wParam == VK_CONTROL) // w gore
+		{
 			posZ -= const_velocity;
-
+			velocityUpdate = 1;
+		}
 		if (wParam == VK_SHIFT) // w dol
+		{
 			posZ += const_velocity;
+			velocityUpdate = 1;
+		}
+		if (wParam == VK_SPACE)
+		{
+			velocityR = velocityL = 0;
+			velocityUpdate = 1;
+		}
+
+		if (wParam == VK_UP)
+		{
+			velocityL += const_velocity;
+			velocityR += const_velocity;
+			velocityUpdate = 1;
+		}
+
+		if (wParam == VK_DOWN)
+		{
+			velocityL -= const_velocity;
+			velocityR -= const_velocity;
+			velocityUpdate = 1;
+		}
 
 		InvalidateRect(hWnd, NULL, FALSE);
 	}
