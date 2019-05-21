@@ -54,8 +54,7 @@ static HINSTANCE hInstance;
 static GLfloat xRot = 0.0f;
 static GLfloat yRot = 0.0f;
 static GLfloat zRot = 0.0f;
-static GLfloat zRot_old = zRot;
-static GLfloat rotSpeed = 45.0f;
+static GLfloat rotSpeed = 15.0f;
 
 static GLfloat zoom = 0.0f;
 static GLfloat fov = 2000.0f;
@@ -64,12 +63,21 @@ static GLsizei lastWidth;
 
 static GLfloat cameraX = 0.0f;
 static GLfloat cameraY = 0.0f;
-static GLfloat cameraZ = 0.0f;
+static GLfloat cameraZ = 10.0f;
 static GLfloat cameraSpeed = 15.0f;
-std::vector<GLfloat> cameraPos{ 0.0f,0.0f,0.0f,0.0f };
+static GLfloat velocity = 0.0f;
+//std::vector<GLfloat> cameraPos{ 0.0f,0.0f,0.0f,0.0f };
+std::vector<GLfloat> cameraPos{ 0.0f,0.0f,0.0f };
+std::vector<GLfloat> midPointLocation{ 0,0,0 };
+bool rotated=0;
+bool moved=0;
 
+Lazik rover(0,0, 10);
 
-Lazik rover(-25, -25, 10);
+Terrain mars("objects/mars.obj", 0, 0, 0);
+Terrain rock("objects/rock/rock.obj", 50, -100, 4);
+Terrain rock2("objects/rock2/rock2.obj", 200, 0, 15);
+Terrain rock3("objects/rock3/rock3.obj", 300, -200, 35);
 
 // Opis tekstury
 BITMAPINFOHEADER	bitmapInfoHeader;	// nag³ówek obrazu
@@ -335,13 +343,15 @@ void RenderScene(void)
 	//glRotatef(yRot, 0.0f, 1.0f, 0.0f);
 	//glRotatef(zRot, 0.0f, 0.0f, 1.0f);
 	//glRotatef(zoom, 0, 0, 0);
+	cameraX += velocity * sin(-zRot * GL_PI / 180);
+	cameraY += velocity * cos(zRot*GL_PI / 180);
 
 	gluLookAt(
-		cameraY*sin(-zRot * GL_PI / 180),
-		cameraY*cos(zRot * GL_PI / 180) - 200,
+		cameraX,//cameraY*sin(-zRot * GL_PI / 180),
+		cameraY-200 ,//cameraY*cos(zRot * GL_PI / 180) - 200,
 		200,
-		cameraY*sin(-zRot * GL_PI / 180),
-		cameraY*cos(zRot * GL_PI / 180),
+		cameraX ,//	cameraY*sin(-zRot * GL_PI / 180),
+		cameraY ,//	cameraY*cos(zRot * GL_PI / 180),
 		0.0,
 		0.0,
 		1.0,
@@ -364,7 +374,7 @@ void RenderScene(void)
 
 	glRotatef(90, 1, 0, 0);
 	glScalef(2, 2, 2);
-	Terrain mars("objects/mars.obj", 0, 0, 0);
+
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, tekstury[0]);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -377,7 +387,7 @@ void RenderScene(void)
 
 	glPushMatrix();
 
-	Terrain rock("objects/rock/rock.obj", 50, -100, 4);
+
 	rock.setColor(0.89, 0.44, 0.1);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, tekstury[1]);
@@ -391,7 +401,7 @@ void RenderScene(void)
 
 	glPushMatrix();
 
-	Terrain rock2("objects/rock2/rock2.obj", 200, 0, 15);
+
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, tekstury[2]);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -405,7 +415,7 @@ void RenderScene(void)
 
 	glPushMatrix();
 
-	Terrain rock3("objects/rock3/rock3.obj", 300, -200, 35);
+
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, tekstury[3]);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -416,30 +426,49 @@ void RenderScene(void)
 
 	glPopMatrix();
 
+	
 
-	//sin(zRot*GL_PI / 180)
+	glPushMatrix();
 
-	/*
+	glTranslatef(cameraX , cameraY , cameraZ);
+	velocity = 0;
+
+	
+	midPointLocation = { cameraPos[0] / 2,cameraPos[1] / 2 ,cameraPos[2] }; // trzeba podzieliæ przez 2 bo skalujemy razy 0.5 xD
+
+	glTranslatef(midPointLocation[0], midPointLocation[1], midPointLocation[2]);
+
+	//glTranslatef((midPointLocation[0]+cameraY)*sin(-zRot * GL_PI / 180), (midPointLocation[1]+cameraY)*cos(zRot*GL_PI / 180), midPointLocation[2]);
+
 	glRotatef(zRot, 0.0f, 0.0f, 1.0f);
-	glTranslatef(
-		cameraX,
-		cameraY,
-		cameraZ
-	);
-	*/
+
+
+	glTranslatef(-midPointLocation[0], -midPointLocation[1], -midPointLocation[2]);
+
+
+	//glTranslatef(midPointLocation[0]* sin(zRot*GL_PI / 180), midPointLocation[1]* cos(zRot*GL_PI / 180), midPointLocation[2]);
+	//glTranslatef(
+		//cameraX,cameraY,cameraZ//cameraPos[0],//+cameraY*sin(zRot*GL_PI / 180),
+		//cameraPos[1],//+cameraY*cos(zRot*GL_PI / 180),
+		//cameraPos[2]//+cameraZ
+
+	//	midPointLocation[0] * sin(zRot*GL_PI / 180), midPointLocation[1] * cos(zRot*GL_PI / 180), midPointLocation[2]
+	//);
 	
 	
-	glTranslatef(
+	
+	/*glTranslatef(
 		cameraY*sin(-zRot * GL_PI / 180),
 		cameraY*cos(zRot * GL_PI / 180),
 		cameraZ
 	);
+
 	glRotatef(zRot, 0.0f, 0.0f, 1.0f);
-	
+	*/
 
 	glScalef(0.5, 0.5, 0.5);
 
-	zRot_old = zRot;
+	//zRot_old = zRot;
 
 
 
@@ -447,6 +476,11 @@ void RenderScene(void)
 	rover.draw();
 
 	//cameraPos = rover.getPos();
+
+	glPopMatrix();
+
+	//glScalef(0.5, 0.5, 0.5);
+	//rover.draw();
 
 	glPopMatrix();
 
@@ -660,6 +694,7 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		wglMakeCurrent(hDC, hRC);
 		SetupRC();
 
+		cameraPos = rover.getPos();
 
 		//gluLookAt(cameraX, cameraY, cameraZ, 0 + cameraX, 0 + cameraY, 0.0, 0.0, 1.0, 0.0);
 		//glGenTextures(2, &texture[0]);                  // tworzy obiekt tekstury			
@@ -803,11 +838,16 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		if (wParam == VK_RIGHT)
 			yRot += rotSpeed;
 
-		if (wParam == 'Q')
+		if (wParam == 'Q') // skret w lewo
+		{
+			rotated=1 ;
 			zRot += rotSpeed;
-
-		if (wParam == 'E')
+		}
+		if (wParam == 'E') // skret w prawo
+		{
+			rotated=1;
 			zRot -= rotSpeed;
+		}
 
 		if (wParam == VK_SUBTRACT)
 			zoom += rotSpeed;
@@ -815,11 +855,20 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		if (wParam == VK_ADD)
 			zoom -= rotSpeed;
 
-		if (wParam == 'W')
-			cameraY += cameraSpeed;
+		if (wParam == 'W') // do przodu
+		{
+			moved = 1;
+			velocity = cameraSpeed;
+			//cameraY += cameraSpeed;
+		}
+			
 
-		if (wParam == 'S')
-			cameraY -= cameraSpeed;
+		if (wParam == 'S') // do tylu
+		{
+			moved = 1;
+			velocity = -cameraSpeed;
+		//	cameraY -= cameraSpeed;
+		}
 
 		if (wParam == 'A')
 			cameraX -= cameraSpeed;
@@ -827,10 +876,10 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		if (wParam == 'D')
 			cameraX += cameraSpeed;
 
-		if (wParam == VK_CONTROL)
+		if (wParam == VK_CONTROL) // w gore
 			cameraZ -= cameraSpeed;
 
-		if (wParam == VK_SHIFT)
+		if (wParam == VK_SHIFT) // w dol
 			cameraZ += cameraSpeed;
 
 		zoom >= 80 ? zoom = 80 : zoom;
