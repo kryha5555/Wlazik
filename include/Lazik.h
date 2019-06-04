@@ -11,13 +11,17 @@
 class Lazik : public Figura
 {
 public:
-	Lazik(GLfloat x, GLfloat y, GLfloat z);
+	Lazik(GLfloat x, GLfloat y, GLfloat z, unsigned int szTex);
 	~Lazik();
 
 	void draw();
 	void setParams();
 	std::vector<GLfloat> getPos();
 	GLfloat getAxleTrack();
+	GLfloat getRadius();
+	void setSzescianTex(unsigned int tex);
+	void setWheelTex(unsigned int tex);
+	void setAxleTex(unsigned int tex);
 
 private:
 	//TODO: Renaming to platformXlen etc.
@@ -56,6 +60,10 @@ private:
 	GLfloat platformTopxlen;
 	GLfloat platformTopHeight;
 
+
+	unsigned int szescianTex;
+	unsigned int wheelTex;
+	unsigned int axleTex;
 
 };
 

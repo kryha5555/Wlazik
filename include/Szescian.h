@@ -8,11 +8,12 @@
 class Szescian : public Figura
 {
 public:
-	Szescian(GLfloat x, GLfloat y, GLfloat z, GLfloat lenx, GLfloat leny, GLfloat lenz);
+	Szescian(GLfloat x, GLfloat y, GLfloat z, GLfloat lenx, GLfloat leny, GLfloat lenz, unsigned int tex=0);
 	~Szescian();
 
 	void draw();
 
 	GLfloat xlen, ylen, zlen;
+	unsigned int tex;
 };
 

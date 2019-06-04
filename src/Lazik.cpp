@@ -1,10 +1,11 @@
 #include "..\include\Lazik.h"
 
 
-Lazik::Lazik(GLfloat x, GLfloat y, GLfloat z)
+Lazik::Lazik(GLfloat x, GLfloat y, GLfloat z, unsigned int szTex)
 	: Figura(x, y, z)
 {
 	setParams();
+	szescianTex = szTex;
 }
 
 Lazik::~Lazik()
@@ -20,7 +21,8 @@ void Lazik::draw()
 		ypos + ylen,
 		zpos,
 		wheelRadius,
-		-wheelHeight
+		-wheelHeight,
+		wheelTex
 	);
 
 	Walec lmWheel(
@@ -28,14 +30,16 @@ void Lazik::draw()
 		ypos + ylen / 3,
 		zpos,
 		wheelRadius,
-		-wheelHeight
+		-wheelHeight,
+		wheelTex
 	);
 	Walec lrWheel(
 		xpos,
 		ypos,
 		zpos,
 		wheelRadius,
-		-wheelHeight
+		-wheelHeight,
+		wheelTex
 	);
 
 	wheels.insert(wheels.end(), { lfWheel,lmWheel,lrWheel });
@@ -45,7 +49,8 @@ void Lazik::draw()
 		ypos + ylen,
 		zpos,
 		wheelRadius,
-		wheelHeight
+		wheelHeight,
+		wheelTex
 	);
 
 	Walec rmWheel(
@@ -53,7 +58,8 @@ void Lazik::draw()
 		ypos + ylen / 3,
 		zpos,
 		wheelRadius,
-		wheelHeight
+		wheelHeight,
+		wheelTex
 	);
 
 	Walec rrWheel(
@@ -61,7 +67,8 @@ void Lazik::draw()
 		ypos,
 		zpos,
 		wheelRadius,
-		wheelHeight
+		wheelHeight,
+		wheelTex
 	);
 
 
@@ -83,7 +90,8 @@ void Lazik::draw()
 		axleRadius,
 		xpos + 2 * axleRadius,
 		ypos + (2.f / 3.f)*ylen,
-		zpos + platformEvelation + platformThickness / 2
+		zpos + platformEvelation + platformThickness / 2,
+		axleTex
 	);
 
 	Walec ltAxle(
@@ -93,7 +101,8 @@ void Lazik::draw()
 		axleRadius,
 		xpos + 2 * axleRadius,
 		ypos + (2.f / 3.f)*ylen,
-		zpos + platformEvelation + platformThickness / 2
+		zpos + platformEvelation + platformThickness / 2,
+		axleTex
 	);
 
 	Walec lbAxle(
@@ -103,7 +112,8 @@ void Lazik::draw()
 		axleRadius,
 		xpos + axleRadius,
 		ypos + ylen / 6,
-		zpos + (2.f / 3.f)*platformEvelation
+		zpos + (2.f / 3.f)*platformEvelation,
+		axleTex
 	);
 
 	Walec lrAxle(
@@ -113,7 +123,8 @@ void Lazik::draw()
 		axleRadius,
 		xpos + axleRadius,
 		ypos + ylen / 6,
-		zpos + (2.f / 3.f)*platformEvelation
+		zpos + (2.f / 3.f)*platformEvelation,
+		axleTex
 	);
 
 	axles.insert(axles.end(), { lfAxle,ltAxle,lbAxle, lrAxle });
@@ -125,7 +136,8 @@ void Lazik::draw()
 		axleRadius,
 		xpos + +xlen + 2 * axleRadius,
 		ypos + (2.f / 3.f)*ylen,
-		zpos + platformEvelation + platformThickness / 2
+		zpos + platformEvelation + platformThickness / 2,
+		axleTex
 	);
 
 	Walec rtAxle(
@@ -135,7 +147,8 @@ void Lazik::draw()
 		axleRadius,
 		xpos + xlen + 2 * axleRadius,
 		ypos + (2.f / 3.f)*ylen,
-		zpos + platformEvelation + platformThickness / 2
+		zpos + platformEvelation + platformThickness / 2,
+		axleTex
 	);
 
 	Walec rbAxle(xpos + xlen + 4 * axleRadius,
@@ -144,7 +157,8 @@ void Lazik::draw()
 		axleRadius,
 		xpos + xlen + 3 * axleRadius,
 		ypos + ylen / 6,
-		zpos + (2.f / 3.f)*platformEvelation
+		zpos + (2.f / 3.f)*platformEvelation,
+		axleTex
 	);
 
 	Walec rrAxle(
@@ -154,7 +168,8 @@ void Lazik::draw()
 		axleRadius,
 		xpos + xlen + 3 * axleRadius,
 		ypos + ylen / 6,
-		zpos + (2.f / 3.f)*platformEvelation
+		zpos + (2.f / 3.f)*platformEvelation,
+		axleTex
 	);
 
 	axles.insert(axles.end(), { rfAxle,rtAxle,rbAxle,rrAxle });
@@ -166,18 +181,7 @@ void Lazik::draw()
 		axle.draw();
 	}
 
-	//drawing platform
-	Szescian platform(
-		xpos + 2 * axleRadius,
-		ypos,
-		zpos + platformEvelation,
-		xlen,
-		ylen,
-		platformThickness
-	);
-
-	platform.setColor(0, 1, 0);
-	platform.draw();
+	
 
 	//drawing camera
 	Walec cameraStand(
@@ -185,7 +189,8 @@ void Lazik::draw()
 		ypos + ylen - 1.5*cameraStandRadius, // ypos + ylen, as above
 		zpos + platformEvelation + platformThickness,
 		cameraStandRadius,
-		cameraStandHeight //temporary, parameterized
+		cameraStandHeight, //temporary, parameterized,,
+		axleTex
 	);
 
 	cameraStand.setColor(1, 0, 1);
@@ -209,7 +214,8 @@ void Lazik::draw()
 		ypos + 1.5*cameraStandRadius,
 		zpos + platformEvelation + platformThickness,
 		radioStandRadius,
-		radioStandHeight
+		radioStandHeight,
+		axleTex
 	);
 
 	radioStand.setColor(1, 0, 1);
@@ -232,7 +238,8 @@ void Lazik::draw()
 		ypos + 5 * flagPoleRadius,
 		zpos + platformEvelation + platformThickness,
 		flagPoleRadius,
-		flagPoleHeight
+		flagPoleHeight,
+		axleTex
 	);
 
 	flagPole.setColor(1, 0, 1);
@@ -278,22 +285,23 @@ void Lazik::draw()
 
 	platformTopFront.draw(-90, 0, 1, 0);
 
-	// drawing floor
-	//Szescian floor(-10000, -10000, -wheelRadius, 20000, 20000, 0.1);
-	//floor.setColor(0.59f, 0.27f, 0.08f);
-	//floor.draw();
 
-	TriangularPrism kamien(
-		-20,
-		-20,
-		-wheelRadius,
-		15,
-		20,
-		30
+
+
+
+	//drawing platform
+	Szescian platform(
+		xpos + 2 * axleRadius,
+		ypos,
+		zpos + platformEvelation,
+		xlen,
+		ylen,
+		platformThickness,
+		szescianTex
 	);
 
-	kamien.setColor(0.6, 0.6, 0.6);
-	//kamien.draw(-90,0,1,0);
+	platform.setColor(0, 1, 0);
+	platform.draw();
 
 }
 
@@ -347,5 +355,25 @@ std::vector<GLfloat> Lazik::getPos()
 GLfloat Lazik::getAxleTrack()
 {
 	return xlen + 4 * axleRadius;
+}
+
+GLfloat Lazik::getRadius()
+{
+	return GLfloat();
+}
+
+void Lazik::setSzescianTex(unsigned int tex)
+{
+	szescianTex = tex;
+}
+
+void Lazik::setWheelTex(unsigned int tex)
+{
+	wheelTex = tex;
+}
+
+void Lazik::setAxleTex(unsigned int tex)
+{
+	axleTex = tex;
 }
 

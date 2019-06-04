@@ -54,6 +54,7 @@ static HINSTANCE hInstance;
 static GLfloat rotAngle = 0.0f;
 static GLfloat rotSpeed = 15.0f;
 static GLfloat swingRadius = 0.0f;
+static GLfloat rotAngleDeg = 0.0f;
 
 static GLfloat fov = 2000.0f;
 static GLsizei lastHeight;
@@ -67,24 +68,29 @@ static GLfloat const_velocity = 0.7f;
 static GLfloat velocityL = 0.0f;
 static GLfloat velocityR = 0.0f;
 static GLfloat velocity = 0.0f;
-static GLfloat momentumConst = 0.2*const_velocity;
+static GLfloat momentumConst = 0.1*const_velocity;
 bool velocityUpdate = 0;
 //std::vector<GLfloat> midPointLocation{ 0.0f,0.0f,0.0f,0.0f };
 std::vector<GLfloat> midPointLocation{ 0.0f,0.0f,0.0f };
 std::vector<GLfloat> midPointLocationScaled{ 0,0,0 };
+unsigned int tekstury[6];
 
-Lazik rover(0, 0, 10);
 
 Terrain mars("objects/mars.obj", 0, 0, 0);
 Terrain rock("objects/rock/rock.obj", 50, -100, 4);
 Terrain rock2("objects/rock2/rock2.obj", 200, 0, 15);
 Terrain rock3("objects/rock3/rock3.obj", 300, -200, 35);
+GLfloat *rock1BB;
+GLfloat *rock2BB;
+GLfloat *rock3BB;
+
+Lazik rover(0, 0, 10, tekstury[4]);
 
 // Opis tekstury
 BITMAPINFOHEADER	bitmapInfoHeader;	// nag³ówek obrazu
 unsigned char*		bitmapData;			// dane tekstury
 unsigned int		texture[2];			// obiekt tekstury
-unsigned int tekstury[3];
+
 
 // Declaration for Window procedure
 LRESULT CALLBACK WndProc(HWND    hWnd,
@@ -227,7 +233,7 @@ void SetupRC()
 
 
 	glEnable(GL_DEPTH_TEST);	// Hidden surface removal
-	glFrontFace(GL_CCW);		// Counter clock-wise polygons face out
+	//glFrontFace(GL_CCW);		// Counter clock-wise polygons face out
 	//glEnable(GL_CULL_FACE);		// Do not calculate inside of jet
 
 	// Enable lighting
@@ -262,16 +268,43 @@ void SetupRC()
 	tekstury[1] = LoadTexture("objects/rock/rock.png", 1);
 	tekstury[2] = LoadTexture("objects/rock2/rock2.png", 1);
 	tekstury[3] = LoadTexture("objects/rock3/rock3.png", 1);
+	tekstury[4] = LoadTexture("objects/body.png", 1);
+	tekstury[5] = LoadTexture("objects/wheel.png", 1);
+	tekstury[6] = LoadTexture("objects/axle.png", 1);
+
+	rover.setSzescianTex(tekstury[4]);
+	rover.setWheelTex(tekstury[5]);
+	rover.setAxleTex(tekstury[6]);
 
 	TwInit(TW_OPENGL, NULL);
 	TwBar *bar;
 	bar = TwNewBar("Params");
 
-	TwAddVarRW(bar, "velocityL", TW_TYPE_FLOAT, &velocityL, "");
-	TwAddVarRW(bar, "velocityR", TW_TYPE_FLOAT, &velocityR, "");
-	TwAddVarRW(bar, "velocity", TW_TYPE_FLOAT, &velocity, "");
+	rock1BB = rock.getBB();
+	rock2BB = rock2.getBB();
+	rock3BB = rock3.getBB();
 
-	TwDefine(" mybar refresh=0.1 ");
+	TwAddVarRW(bar, "velocityL", TW_TYPE_FLOAT, &velocityL, "precision=1");
+	TwAddVarRW(bar, "velocityR", TW_TYPE_FLOAT, &velocityR, "precision=1");
+	TwAddVarRW(bar, "velocity", TW_TYPE_FLOAT, &velocity, "precision=1");
+	TwAddSeparator(bar, NULL, "");
+
+	TwAddVarRW(bar, "x position", TW_TYPE_FLOAT, &posX, "precision=1");
+	TwAddVarRW(bar, "y position", TW_TYPE_FLOAT, &posY, "precision=1");
+	TwAddVarRW(bar, "rotAngle", TW_TYPE_FLOAT, &rotAngleDeg, "precision=1");
+	TwAddVarRW(bar, "rock1BB.X", TW_TYPE_FLOAT, &rock1BB[0], "precision=1");
+
+	TwAddVarRW(bar, "rock1BB.Y", TW_TYPE_FLOAT, &rock1BB[1], "precision=1");
+
+	TwAddVarRW(bar, "rock1BB.x", TW_TYPE_FLOAT, &rock1BB[2], "precision=1");
+
+	TwAddVarRW(bar, "rock1BB.y", TW_TYPE_FLOAT, &rock1BB[3], "precision=1");
+
+	GLfloat refresh = 0.1;
+	TwSetParam(bar, NULL, "refresh", TW_PARAM_FLOAT, 1, &refresh);
+
+	int barSize[2] = { 224, 250 };
+	TwSetParam(bar, NULL, "size", TW_PARAM_INT32, 2, barSize);
 }
 
 
@@ -355,11 +388,11 @@ void RenderScene(void)
 	
 	glPushMatrix();
 
-	if (velocityUpdate)
-	{
+	//if (velocityUpdate)
+//	{
 		velocity = (velocityL + velocityR) / 2;
 		velocityUpdate = 0;
-	}
+	//}
 
 	if (velocityL != velocityR)
 	{
@@ -386,6 +419,33 @@ void RenderScene(void)
 		0.0
 	);
 
+	//Szescian huj(rock1BB[0], rock1BB[1],10, rock1BB[2]- rock1BB[0], rock1BB[3]- rock1BB[1],10);
+	Szescian huj(rock1BB[0]+ 50, rock1BB[1]-100, 10,1,1, 100);
+	//Szescian huj(rock1BB[0], rock1BB[1], 10,1,1, 10);
+	huj.draw();
+
+	Szescian huj2(rock1BB[2] + 50, rock1BB[3] - 100, 10, 1, 1, 100);
+	//Szescian huj(rock1BB[0], rock1BB[1], 10,1,1, 10);
+	huj2.setColor(1, 0, 0);
+	huj2.draw();
+
+	Szescian hujj(rock2BB[0] +200, rock2BB[1], 10, 1, 1, 100);
+	//Szescian huj(rock1BB[0], rock1BB[1], 10,1,1, 10);
+	hujj.draw();
+
+	Szescian hujj2(rock2BB[2] + 200, rock2BB[3] , 10, 1, 1, 100);
+	//Szescian huj(rock1BB[0], rock1BB[1], 10,1,1, 10);
+	hujj2.setColor(1, 0, 0);
+	hujj2.draw();
+
+	Szescian hujjj(rock3BB[0] + 300, rock3BB[1]-200, 10, 1, 1, 100);
+	//Szescian huj(rock1BB[0], rock1BB[1], 10,1,1, 10);
+	hujjj.draw();
+
+	Szescian hujjj2(rock3BB[2] + 300, rock3BB[3]-200, 10, 1, 1, 100);
+	//Szescian huj(rock1BB[0], rock1BB[1], 10,1,1, 10);
+	hujjj2.setColor(1, 0, 0);
+	hujjj2.draw();
 
 	glPushMatrix();
 
@@ -414,7 +474,7 @@ void RenderScene(void)
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	glPopMatrix();
-
+	
 
 	glPushMatrix();
 
@@ -460,6 +520,7 @@ void RenderScene(void)
 			velocity += momentumConst;
 		else velocityL = velocityR = velocity = 0;
 	}*/
+
 	if (velocityL > 0)
 	{
 		if (velocityL - momentumConst > 0)
@@ -486,7 +547,7 @@ void RenderScene(void)
 			velocityR += momentumConst;
 		else velocityR = 0;
 	}
-
+	
 
 	midPointLocationScaled = { midPointLocation[0] / 2,midPointLocation[1] / 2 ,midPointLocation[2] }; // trzeba podzieliæ przez 2 bo skalujemy razy 0.5 
 
@@ -495,13 +556,14 @@ void RenderScene(void)
 	glTranslatef(-midPointLocationScaled[0], -midPointLocationScaled[1], -midPointLocationScaled[2]); // translacja do punktu 0,0
 
 	glScalef(0.5, 0.5, 0.5);
-
+	
 	rover.draw();
 
 	glPopMatrix();
 
 	glPopMatrix();
 
+	rotAngleDeg = abs(fmod(rotAngle * 180 / GL_PI, 360));
 	TwDraw();
 
 	glMatrixMode(GL_MODELVIEW);
@@ -963,6 +1025,9 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 
 	}
 
+
+	if (TwEventWin(hWnd, message, wParam, lParam)) // send event message to AntTweakBar
+		return 0;
 	return (0L);
 }
 
