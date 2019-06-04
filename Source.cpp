@@ -35,7 +35,7 @@
 #include "resource.h"           // About box resource identifiers.
 #include "include/Lazik.h"
 #include "include/Terrain.h"
-
+#include "include/AntTweakBar.h"
 #include "include/stb_image.h"
 
 
@@ -63,7 +63,7 @@ static GLfloat posX = 0.0f;
 static GLfloat posY = 0.0f;
 static GLfloat posZ = 10.0f;
 
-static GLfloat const_velocity = 1.0f;
+static GLfloat const_velocity = 0.7f;
 static GLfloat velocityL = 0.0f;
 static GLfloat velocityR = 0.0f;
 static GLfloat velocity = 0.0f;
@@ -185,6 +185,7 @@ void ChangeSize(GLsizei w, GLsizei h)
 
 	lastWidth = w;
 	lastHeight = h;
+	TwWindowSize(w, h);
 
 	fAspect = (GLfloat)w / (GLfloat)h;
 	// Set Viewport to window dimensions
@@ -256,7 +257,21 @@ void SetupRC()
 	// Black brush
 	glColor3f(0.0, 0.0, 0.0);
 
+	midPointLocation = rover.getPos();
+	tekstury[0] = LoadTexture("objects/mars.png", 1);
+	tekstury[1] = LoadTexture("objects/rock/rock.png", 1);
+	tekstury[2] = LoadTexture("objects/rock2/rock2.png", 1);
+	tekstury[3] = LoadTexture("objects/rock3/rock3.png", 1);
 
+	TwInit(TW_OPENGL, NULL);
+	TwBar *bar;
+	bar = TwNewBar("Params");
+
+	TwAddVarRW(bar, "velocityL", TW_TYPE_FLOAT, &velocityL, "");
+	TwAddVarRW(bar, "velocityR", TW_TYPE_FLOAT, &velocityR, "");
+	TwAddVarRW(bar, "velocity", TW_TYPE_FLOAT, &velocity, "");
+
+	TwDefine(" mybar refresh=0.1 ");
 }
 
 
@@ -337,7 +352,7 @@ void RenderScene(void)
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	// Save the matrix state and do the rotations
-
+	
 	glPushMatrix();
 
 	if (velocityUpdate)
@@ -349,21 +364,13 @@ void RenderScene(void)
 	if (velocityL != velocityR)
 	{
 		if (swingRadius = rover.getAxleTrack()*(velocityL + velocityR) / (2 * (velocityL - velocityR))) // to je swing radius a nie swing angle xD
-			rotAngle = atan2(swingRadius, 0) - atan2(swingRadius, velocity);
+			rotAngle += atan2(swingRadius, 0) - atan2(swingRadius, velocity);
 			//rotAngle = asin(velocity / swingRadius);
 
 	}
-	else if (velocityL==0)
-		rotAngle = 0;
-
-
-
-
-
-
-
-
-
+	//else 
+		//rotAngle = 0;
+	   	  
 	posX += velocity * sin(-rotAngle); // Obliczanie nowej pozycji w osi x; X = x_0 + v*t; gdzie t = sin(-a);
 	posY += velocity * cos(rotAngle);// Obliczanie nowej pozycji w osi y; Y = y_0 + v*t; gdzie t = cos(a);
 
@@ -441,7 +448,7 @@ void RenderScene(void)
 	glTranslatef(posX, posY, posZ); // translacja o wektory przemieszczenia obliczone wy¿ej
 
 
-	if (velocity > 0)
+	/*if (velocity > 0)
 	{
 		if (velocity - momentumConst > 0)
 			velocity -= momentumConst;
@@ -452,8 +459,8 @@ void RenderScene(void)
 		if (velocity + momentumConst < 0)
 			velocity += momentumConst;
 		else velocityL = velocityR = velocity = 0;
-	}
-	/*if (velocityL > 0)
+	}*/
+	if (velocityL > 0)
 	{
 		if (velocityL - momentumConst > 0)
 			velocityL -= momentumConst;
@@ -478,7 +485,7 @@ void RenderScene(void)
 		if (velocityR + momentumConst < 0)
 			velocityR += momentumConst;
 		else velocityR = 0;
-	}*/
+	}
 
 
 	midPointLocationScaled = { midPointLocation[0] / 2,midPointLocation[1] / 2 ,midPointLocation[2] }; // trzeba podzieliæ przez 2 bo skalujemy razy 0.5 
@@ -494,6 +501,8 @@ void RenderScene(void)
 	glPopMatrix();
 
 	glPopMatrix();
+
+	TwDraw();
 
 	glMatrixMode(GL_MODELVIEW);
 
@@ -705,16 +714,12 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		wglMakeCurrent(hDC, hRC);
 		SetupRC();
 
-		midPointLocation = rover.getPos();
+	
 
 
 		//gluLookAt(posX, posY, posZ, 0 + posX, 0 + posY, 0.0, 0.0, 1.0, 0.0);
 		//glGenTextures(2, &texture[0]);                  // tworzy obiekt tekstury			
-
-		tekstury[0] = LoadTexture("objects/mars.png", 1);
-		tekstury[1] = LoadTexture("objects/rock/rock.png", 1);
-		tekstury[2] = LoadTexture("objects/rock2/rock2.png", 1);
-		tekstury[3] = LoadTexture("objects/rock3/rock3.png", 1);
+		
 		// ³aduje pierwszy obraz tekstury:
 		//bitmapData = LoadBitmapFile("Bitmapy\\checker.bmp", &bitmapInfoHeader);
 
@@ -841,7 +846,7 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 	{
 
 		
-		if (wParam == 'R') // skret w prawo
+		/*if (wParam == 'R') // skret w prawo
 		{
 			posX = posY =velocityL=velocityR=velocity= 0;
 		}
@@ -867,7 +872,36 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		{
 			velocityR -= const_velocity;
 			velocityUpdate = 1;
+		}*/
+
+		if (wParam == 'W') // do przodu
+		{
+			velocityL += const_velocity;
+			velocityR += const_velocity;
+			velocityUpdate = 1;
 		}
+
+		if (wParam == 'S') // do tylu
+		{
+			velocityL -= const_velocity;
+			velocityR -= const_velocity;
+			velocityUpdate = 1;
+		}
+
+		if (wParam == 'A') // do tylu
+		{
+			velocityL += const_velocity;
+			velocityR -= const_velocity;
+			velocityUpdate = 1;
+		}
+
+		if (wParam == 'D') // do tylu
+		{
+			velocityR += const_velocity;
+			velocityL -= const_velocity;
+			velocityUpdate = 1;
+		}
+
 		if (wParam == VK_CONTROL) // w gore
 		{
 			posZ -= const_velocity;
@@ -982,6 +1016,7 @@ BOOL APIENTRY AboutDlgProc(HWND hDlg, UINT message, UINT wParam, LONG lParam)
 
 	// Closed from sysbox
 	case WM_CLOSE:
+		TwTerminate();
 		EndDialog(hDlg, TRUE);
 		break;
 	}
