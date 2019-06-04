@@ -11,7 +11,7 @@
 class Lazik : public Figura
 {
 public:
-	Lazik(GLfloat x, GLfloat y, GLfloat z, unsigned int szTex);
+	Lazik(GLfloat x, GLfloat y, GLfloat z);
 	~Lazik();
 
 	void draw();
@@ -22,6 +22,8 @@ public:
 	void setSzescianTex(unsigned int tex);
 	void setWheelTex(unsigned int tex);
 	void setAxleTex(unsigned int tex);
+	GLfloat *getBB();
+	bool isColliding(GLfloat *obstacleBB);
 
 private:
 	//TODO: Renaming to platformXlen etc.
@@ -64,6 +66,8 @@ private:
 	unsigned int szescianTex;
 	unsigned int wheelTex;
 	unsigned int axleTex;
+
+	GLfloat BB[4] = { 0,0,0,0 };// X,Y,x,y
 
 };
 

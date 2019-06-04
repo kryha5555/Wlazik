@@ -1,11 +1,10 @@
 #include "..\include\Lazik.h"
 
 
-Lazik::Lazik(GLfloat x, GLfloat y, GLfloat z, unsigned int szTex)
+Lazik::Lazik(GLfloat x, GLfloat y, GLfloat z)
 	: Figura(x, y, z)
 {
 	setParams();
-	szescianTex = szTex;
 }
 
 Lazik::~Lazik()
@@ -181,7 +180,7 @@ void Lazik::draw()
 		axle.draw();
 	}
 
-	
+
 
 	//drawing camera
 	Walec cameraStand(
@@ -345,8 +344,8 @@ void Lazik::setParams()
 std::vector<GLfloat> Lazik::getPos()
 {
 	std::vector<GLfloat> pos;
-	pos.push_back( xpos + 2 * axleRadius + xlen / 2); 
-	pos.push_back( ypos + ylen / 2);
+	pos.push_back(xpos + 2 * axleRadius + xlen / 2);
+	pos.push_back(ypos + ylen / 2);
 	pos.push_back(zpos + platformEvelation + platformThickness + platformTopHeight);
 
 	return pos;
@@ -375,5 +374,23 @@ void Lazik::setWheelTex(unsigned int tex)
 void Lazik::setAxleTex(unsigned int tex)
 {
 	axleTex = tex;
+}
+
+GLfloat * Lazik::getBB()
+{
+	BB[0] = xpos + ylen + wheelRadius;
+	BB[1] = ypos + ylen + wheelRadius;
+	BB[2] = xpos - wheelRadius;
+	BB[3] = ypos - wheelRadius;
+
+
+
+	return BB;
+}
+
+bool Lazik::isColliding(GLfloat * obstacleBB)
+{
+	//return !(BB[0] < obstacleBB[2] || obstacleBB[0] < BB[2] || BB[1] < obstacleBB[3] || obstacleBB[1] < BB[3]);
+	return !((BB[0] < obstacleBB[2] || obstacleBB[0] < BB[2])&& (BB[1] < obstacleBB[3] || obstacleBB[1] < BB[3]));
 }
 

@@ -83,8 +83,12 @@ Terrain rock3("objects/rock3/rock3.obj", 300, -200, 35);
 GLfloat *rock1BB;
 GLfloat *rock2BB;
 GLfloat *rock3BB;
+GLfloat *roverBB;
+bool collision[3] = { 0,0,0 };
+bool colliding = 0;
+int collisionTimer = 0;
 
-Lazik rover(0, 0, 10, tekstury[4]);
+Lazik rover(0, 0, 10);
 
 // Opis tekstury
 BITMAPINFOHEADER	bitmapInfoHeader;	// nag³ówek obrazu
@@ -283,6 +287,8 @@ void SetupRC()
 	rock1BB = rock.getBB();
 	rock2BB = rock2.getBB();
 	rock3BB = rock3.getBB();
+	roverBB = rover.getBB();
+
 
 	TwAddVarRW(bar, "velocityL", TW_TYPE_FLOAT, &velocityL, "precision=1");
 	TwAddVarRW(bar, "velocityR", TW_TYPE_FLOAT, &velocityR, "precision=1");
@@ -292,14 +298,12 @@ void SetupRC()
 	TwAddVarRW(bar, "x position", TW_TYPE_FLOAT, &posX, "precision=1");
 	TwAddVarRW(bar, "y position", TW_TYPE_FLOAT, &posY, "precision=1");
 	TwAddVarRW(bar, "rotAngle", TW_TYPE_FLOAT, &rotAngleDeg, "precision=1");
-	TwAddVarRW(bar, "rock1BB.X", TW_TYPE_FLOAT, &rock1BB[0], "precision=1");
+	TwAddSeparator(bar, NULL, "");
 
-	TwAddVarRW(bar, "rock1BB.Y", TW_TYPE_FLOAT, &rock1BB[1], "precision=1");
-
-	TwAddVarRW(bar, "rock1BB.x", TW_TYPE_FLOAT, &rock1BB[2], "precision=1");
-
-	TwAddVarRW(bar, "rock1BB.y", TW_TYPE_FLOAT, &rock1BB[3], "precision=1");
-
+	TwAddVarRW(bar, "colliding #1", TW_TYPE_BOOLCPP, &collision[0], "");
+	TwAddVarRW(bar, "colliding #2", TW_TYPE_BOOLCPP, &collision[1], "");
+	TwAddVarRW(bar, "colliding #3", TW_TYPE_BOOLCPP, &collision[2], "");
+	TwAddVarRW(bar, "timer", TW_TYPE_INT16, &collisionTimer, "");
 	GLfloat refresh = 0.1;
 	TwSetParam(bar, NULL, "refresh", TW_PARAM_FLOAT, 1, &refresh);
 
@@ -385,25 +389,25 @@ void RenderScene(void)
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	// Save the matrix state and do the rotations
-	
+
 	glPushMatrix();
 
 	//if (velocityUpdate)
 //	{
-		velocity = (velocityL + velocityR) / 2;
-		velocityUpdate = 0;
+	velocity = (velocityL + velocityR) / 2;
+	velocityUpdate = 0;
 	//}
 
 	if (velocityL != velocityR)
 	{
 		if (swingRadius = rover.getAxleTrack()*(velocityL + velocityR) / (2 * (velocityL - velocityR))) // to je swing radius a nie swing angle xD
 			rotAngle += atan2(swingRadius, 0) - atan2(swingRadius, velocity);
-			//rotAngle = asin(velocity / swingRadius);
+		//rotAngle = asin(velocity / swingRadius);
 
 	}
 	//else 
 		//rotAngle = 0;
-	   	  
+
 	posX += velocity * sin(-rotAngle); // Obliczanie nowej pozycji w osi x; X = x_0 + v*t; gdzie t = sin(-a);
 	posY += velocity * cos(rotAngle);// Obliczanie nowej pozycji w osi y; Y = y_0 + v*t; gdzie t = cos(a);
 
@@ -419,34 +423,54 @@ void RenderScene(void)
 		0.0
 	);
 
-	//Szescian huj(rock1BB[0], rock1BB[1],10, rock1BB[2]- rock1BB[0], rock1BB[3]- rock1BB[1],10);
-	Szescian huj(rock1BB[0]+ 50, rock1BB[1]-100, 10,1,1, 100);
-	//Szescian huj(rock1BB[0], rock1BB[1], 10,1,1, 10);
-	huj.draw();
+	//Szescian rock1BBMax(rock1BB[0], rock1BB[1],10, rock1BB[2]- rock1BB[0], rock1BB[3]- rock1BB[1],10);
+	Szescian rock1BBMax(rock1BB[0] + 50, rock1BB[1] - 100, 10, 1, 1, 100);
+	//Szescian rock1BBMax(rock1BB[0], rock1BB[1], 10,1,1, 100);
+	rock1BBMax.draw();
 
-	Szescian huj2(rock1BB[2] + 50, rock1BB[3] - 100, 10, 1, 1, 100);
-	//Szescian huj(rock1BB[0], rock1BB[1], 10,1,1, 10);
-	huj2.setColor(1, 0, 0);
-	huj2.draw();
+	Szescian rock1BBMin(rock1BB[2] + 50, rock1BB[3] - 100, 10, 1, 1, 100);
+	//Szescian rock1BBMin(rock1BB[2], rock1BB[3], 10,1,1, 100);
+	rock1BBMin.setColor(1, 0, 0);
+	rock1BBMin.draw();
 
-	Szescian hujj(rock2BB[0] +200, rock2BB[1], 10, 1, 1, 100);
-	//Szescian huj(rock1BB[0], rock1BB[1], 10,1,1, 10);
-	hujj.draw();
+	Szescian rock2BBMax(rock2BB[0] + 200, rock2BB[1], 10, 1, 1, 100);
+	//Szescian rock2BBMax(rock1BB[0], rock1BB[1], 10,1,1, 10);
+	rock2BBMax.draw();
 
-	Szescian hujj2(rock2BB[2] + 200, rock2BB[3] , 10, 1, 1, 100);
-	//Szescian huj(rock1BB[0], rock1BB[1], 10,1,1, 10);
-	hujj2.setColor(1, 0, 0);
-	hujj2.draw();
+	Szescian rock2BBMin(rock2BB[2] + 200, rock2BB[3], 10, 1, 1, 100);
+	//Szescian rock2BBMin(rock1BB[0], rock1BB[1], 10,1,1, 10);
+	rock2BBMin.setColor(1, 0, 0);
+	rock2BBMin.draw();
+	
+	Szescian rock3BBMax(rock3BB[0] + 300, rock3BB[1]-200, 10, 1, 1, 100);
+	//Szescian rock3BBMax(rock1BB[0], rock1BB[1], 10,1,1, 10);
+	rock3BBMax.draw();
 
-	Szescian hujjj(rock3BB[0] + 300, rock3BB[1]-200, 10, 1, 1, 100);
-	//Szescian huj(rock1BB[0], rock1BB[1], 10,1,1, 10);
-	hujjj.draw();
+	Szescian rock3BBMin(rock3BB[2] + 300, rock3BB[3]-200, 10, 1, 1, 100);
+	//Szescian rock3BBMin(rock1BB[0], rock1BB[1], 10,1,1, 10);
+	rock3BBMin.setColor(1, 0, 0);
+	rock3BBMin.draw();
+	
+	roverBB = rover.getBB();
 
-	Szescian hujjj2(rock3BB[2] + 300, rock3BB[3]-200, 10, 1, 1, 100);
-	//Szescian huj(rock1BB[0], rock1BB[1], 10,1,1, 10);
-	hujjj2.setColor(1, 0, 0);
-	hujjj2.draw();
+	roverBB[0] = posX + roverBB[0] / 2;
+	roverBB[1] = posY + roverBB[1] / 2;
+	roverBB[2] = posX + roverBB[2] / 2;
+	roverBB[3] = posY + roverBB[3] / 2;
 
+	//Szescian roverBBMax(posX + roverBB[0] / 2, posY + roverBB[1] / 2, 10, 1, 1, 100);
+	Szescian roverBBMax(roverBB[0], roverBB[1], 10, 1, 1, 100);
+	roverBBMax.setColor(0, 0, 1);
+	roverBBMax.draw();
+
+	//Szescian roverBBMin(posX+roverBB[2]/2, posY+roverBB[3]/2, 10, 1, 1, 100);
+	Szescian roverBBMin(roverBB[2], roverBB[3], 10, 1, 1, 100);
+	roverBBMin.setColor(0, 0, 1);
+	roverBBMin.draw();
+
+	collision[0] = !(roverBB[0] < rock1BB[2] + 50 || rock1BB[0] + 50 < roverBB[0] || roverBB[1] < rock1BB[3] - 100 || rock1BB[1] - 100 < roverBB[3]);
+	collision[1] = !(roverBB[0] < rock2BB[2] + 200 || rock2BB[0] + 200 < roverBB[0] || roverBB[1] < rock2BB[3] || rock2BB[1] < roverBB[3]);
+	collision[2] = !(roverBB[0] < rock3BB[2] + 300 || rock3BB[0] + 300 < roverBB[0] || roverBB[1] < rock3BB[3]-200 || rock3BB[1]-200 < roverBB[3]);
 	glPushMatrix();
 
 	glRotatef(90, 1, 0, 0);
@@ -474,7 +498,7 @@ void RenderScene(void)
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	glPopMatrix();
-	
+
 
 	glPushMatrix();
 
@@ -547,7 +571,7 @@ void RenderScene(void)
 			velocityR += momentumConst;
 		else velocityR = 0;
 	}
-	
+
 
 	midPointLocationScaled = { midPointLocation[0] / 2,midPointLocation[1] / 2 ,midPointLocation[2] }; // trzeba podzieliæ przez 2 bo skalujemy razy 0.5 
 
@@ -556,7 +580,7 @@ void RenderScene(void)
 	glTranslatef(-midPointLocationScaled[0], -midPointLocationScaled[1], -midPointLocationScaled[2]); // translacja do punktu 0,0
 
 	glScalef(0.5, 0.5, 0.5);
-	
+
 	rover.draw();
 
 	glPopMatrix();
@@ -565,6 +589,22 @@ void RenderScene(void)
 
 	rotAngleDeg = abs(fmod(rotAngle * 180 / GL_PI, 360));
 	TwDraw();
+
+	if (!colliding && (collision[0] || collision[1] || collision[2]))
+	{
+		velocityL = -0.75*velocityL;
+		velocityR = -0.75*velocityR;
+		velocity = -0.75*velocity;
+		colliding = 1;
+		collisionTimer = 5;
+	}
+
+	if (collisionTimer)
+		collisionTimer--;
+	else
+		colliding = 0;
+
+
 
 	glMatrixMode(GL_MODELVIEW);
 
@@ -776,12 +816,12 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		wglMakeCurrent(hDC, hRC);
 		SetupRC();
 
-	
+
 
 
 		//gluLookAt(posX, posY, posZ, 0 + posX, 0 + posY, 0.0, 0.0, 1.0, 0.0);
 		//glGenTextures(2, &texture[0]);                  // tworzy obiekt tekstury			
-		
+
 		// ³aduje pierwszy obraz tekstury:
 		//bitmapData = LoadBitmapFile("Bitmapy\\checker.bmp", &bitmapInfoHeader);
 
@@ -907,7 +947,7 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 	case WM_KEYDOWN:
 	{
 
-		
+
 		/*if (wParam == 'R') // skret w prawo
 		{
 			posX = posY =velocityL=velocityR=velocity= 0;
@@ -966,31 +1006,17 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 
 		if (wParam == VK_CONTROL) // w gore
 		{
-			posZ -= const_velocity;
+			posZ -= 3*const_velocity;
 			velocityUpdate = 1;
 		}
 		if (wParam == VK_SHIFT) // w dol
 		{
-			posZ += const_velocity;
+			posZ += 3*const_velocity;
 			velocityUpdate = 1;
 		}
 		if (wParam == VK_SPACE)
 		{
 			velocityR = velocityL = 0;
-			velocityUpdate = 1;
-		}
-
-		if (wParam == VK_UP)
-		{
-			velocityL += const_velocity;
-			velocityR += const_velocity;
-			velocityUpdate = 1;
-		}
-
-		if (wParam == VK_DOWN)
-		{
-			velocityL -= const_velocity;
-			velocityR -= const_velocity;
 			velocityUpdate = 1;
 		}
 
