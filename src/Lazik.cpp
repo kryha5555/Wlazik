@@ -380,8 +380,8 @@ GLfloat * Lazik::getBB()
 {
 	BB[0] = xpos + ylen + wheelRadius;
 	BB[1] = ypos + ylen + wheelRadius;
-	BB[2] = xpos - wheelRadius;
-	BB[3] = ypos - wheelRadius;
+	BB[2] = xpos - 2*wheelRadius;
+	BB[3] = ypos - 2*wheelRadius;
 
 
 

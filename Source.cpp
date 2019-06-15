@@ -426,6 +426,7 @@ void RenderScene(void)
 	//Szescian rock1BBMax(rock1BB[0], rock1BB[1],10, rock1BB[2]- rock1BB[0], rock1BB[3]- rock1BB[1],10);
 	Szescian rock1BBMax(rock1BB[0] + 50, rock1BB[1] - 100, 10, 1, 1, 100);
 	//Szescian rock1BBMax(rock1BB[0], rock1BB[1], 10,1,1, 100);
+	rock1BBMax.setColor(0.5, 0.5, 0.5);
 	rock1BBMax.draw();
 
 	Szescian rock1BBMin(rock1BB[2] + 50, rock1BB[3] - 100, 10, 1, 1, 100);
@@ -435,6 +436,7 @@ void RenderScene(void)
 
 	Szescian rock2BBMax(rock2BB[0] + 200, rock2BB[1], 10, 1, 1, 100);
 	//Szescian rock2BBMax(rock1BB[0], rock1BB[1], 10,1,1, 10);
+	rock2BBMax.setColor(0.5, 0.5, 0.5);
 	rock2BBMax.draw();
 
 	Szescian rock2BBMin(rock2BB[2] + 200, rock2BB[3], 10, 1, 1, 100);
@@ -444,6 +446,7 @@ void RenderScene(void)
 	
 	Szescian rock3BBMax(rock3BB[0] + 300, rock3BB[1]-200, 10, 1, 1, 100);
 	//Szescian rock3BBMax(rock1BB[0], rock1BB[1], 10,1,1, 10);
+	rock3BBMax.setColor(0.5, 0.5, 0.5);
 	rock3BBMax.draw();
 
 	Szescian rock3BBMin(rock3BB[2] + 300, rock3BB[3]-200, 10, 1, 1, 100);
@@ -468,9 +471,9 @@ void RenderScene(void)
 	roverBBMin.setColor(0, 0, 1);
 	roverBBMin.draw();
 
-	collision[0] = !(roverBB[0] < rock1BB[2] + 50 || rock1BB[0] + 50 < roverBB[0] || roverBB[1] < rock1BB[3] - 100 || rock1BB[1] - 100 < roverBB[3]);
-	collision[1] = !(roverBB[0] < rock2BB[2] + 200 || rock2BB[0] + 200 < roverBB[0] || roverBB[1] < rock2BB[3] || rock2BB[1] < roverBB[3]);
-	collision[2] = !(roverBB[0] < rock3BB[2] + 300 || rock3BB[0] + 300 < roverBB[0] || roverBB[1] < rock3BB[3]-200 || rock3BB[1]-200 < roverBB[3]);
+	collision[0] = !(roverBB[0] < rock1BB[2]+50 || roverBB[1] < rock1BB[3]-100 || roverBB[2] > rock1BB[0] + 50 ||  roverBB[3] > rock1BB[1]-100);
+	collision[1] = !(roverBB[0] < rock2BB[2] + 200 || roverBB[1] < rock2BB[3]  || roverBB[2] > rock2BB[0] + 200 || roverBB[3] > rock2BB[1] );
+	collision[2] = !(roverBB[0] < rock3BB[2] + 300 || roverBB[1] < rock3BB[3] - 200 || roverBB[2] > rock3BB[0] + 300 || roverBB[3] > rock3BB[1] - 200);
 	glPushMatrix();
 
 	glRotatef(90, 1, 0, 0);
