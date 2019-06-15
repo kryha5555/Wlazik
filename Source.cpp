@@ -69,6 +69,8 @@ static GLfloat velocityL = 0.0f;
 static GLfloat velocityR = 0.0f;
 static GLfloat velocity = 0.0f;
 static GLfloat momentumConst = 0.1*const_velocity;
+static GLfloat battery = 100;
+
 bool velocityUpdate = 0;
 //std::vector<GLfloat> midPointLocation{ 0.0f,0.0f,0.0f,0.0f };
 std::vector<GLfloat> midPointLocation{ 0.0f,0.0f,0.0f };
@@ -300,6 +302,9 @@ void SetupRC()
 	TwAddVarRW(bar, "rotAngle", TW_TYPE_FLOAT, &rotAngleDeg, "precision=1");
 	TwAddSeparator(bar, NULL, "");
 
+	TwAddVarRW(bar, "battery %", TW_TYPE_FLOAT, &battery, "precision=1");
+	TwAddSeparator(bar, NULL, "");
+
 	TwAddVarRW(bar, "colliding #1", TW_TYPE_BOOLCPP, &collision[0], "");
 	TwAddVarRW(bar, "colliding #2", TW_TYPE_BOOLCPP, &collision[1], "");
 	TwAddVarRW(bar, "colliding #3", TW_TYPE_BOOLCPP, &collision[2], "");
@@ -394,8 +399,9 @@ void RenderScene(void)
 
 	//if (velocityUpdate)
 //	{
+
 	velocity = (velocityL + velocityR) / 2;
-	velocityUpdate = 0;
+
 	//}
 
 	if (velocityL != velocityR)
@@ -407,6 +413,13 @@ void RenderScene(void)
 	}
 	//else 
 		//rotAngle = 0;
+
+	if (abs(velocity) > 0.5 && battery > 0)
+		battery -= 1;
+
+	if (abs(velocity) < 0.5 && battery < 100)
+		battery += 1;
+
 
 	posX += velocity * sin(-rotAngle); // Obliczanie nowej pozycji w osi x; X = x_0 + v*t; gdzie t = sin(-a);
 	posY += velocity * cos(rotAngle);// Obliczanie nowej pozycji w osi y; Y = y_0 + v*t; gdzie t = cos(a);
@@ -443,17 +456,17 @@ void RenderScene(void)
 	//Szescian rock2BBMin(rock1BB[0], rock1BB[1], 10,1,1, 10);
 	rock2BBMin.setColor(1, 0, 0);
 	rock2BBMin.draw();
-	
-	Szescian rock3BBMax(rock3BB[0] + 300, rock3BB[1]-200, 10, 1, 1, 100);
+
+	Szescian rock3BBMax(rock3BB[0] + 300, rock3BB[1] - 200, 10, 1, 1, 100);
 	//Szescian rock3BBMax(rock1BB[0], rock1BB[1], 10,1,1, 10);
 	rock3BBMax.setColor(0.5, 0.5, 0.5);
 	rock3BBMax.draw();
 
-	Szescian rock3BBMin(rock3BB[2] + 300, rock3BB[3]-200, 10, 1, 1, 100);
+	Szescian rock3BBMin(rock3BB[2] + 300, rock3BB[3] - 200, 10, 1, 1, 100);
 	//Szescian rock3BBMin(rock1BB[0], rock1BB[1], 10,1,1, 10);
 	rock3BBMin.setColor(1, 0, 0);
 	rock3BBMin.draw();
-	
+
 	roverBB = rover.getBB();
 
 	roverBB[0] = posX + roverBB[0] / 2;
@@ -471,8 +484,8 @@ void RenderScene(void)
 	roverBBMin.setColor(0, 0, 1);
 	roverBBMin.draw();
 
-	collision[0] = !(roverBB[0] < rock1BB[2]+50 || roverBB[1] < rock1BB[3]-100 || roverBB[2] > rock1BB[0] + 50 ||  roverBB[3] > rock1BB[1]-100);
-	collision[1] = !(roverBB[0] < rock2BB[2] + 200 || roverBB[1] < rock2BB[3]  || roverBB[2] > rock2BB[0] + 200 || roverBB[3] > rock2BB[1] );
+	collision[0] = !(roverBB[0] < rock1BB[2] + 50 || roverBB[1] < rock1BB[3] - 100 || roverBB[2] > rock1BB[0] + 50 || roverBB[3] > rock1BB[1] - 100);
+	collision[1] = !(roverBB[0] < rock2BB[2] + 200 || roverBB[1] < rock2BB[3] || roverBB[2] > rock2BB[0] + 200 || roverBB[3] > rock2BB[1]);
 	collision[2] = !(roverBB[0] < rock3BB[2] + 300 || roverBB[1] < rock3BB[3] - 200 || roverBB[2] > rock3BB[0] + 300 || roverBB[3] > rock3BB[1] - 200);
 	glPushMatrix();
 
@@ -574,6 +587,8 @@ void RenderScene(void)
 			velocityR += momentumConst;
 		else velocityR = 0;
 	}
+
+
 
 
 	midPointLocationScaled = { midPointLocation[0] / 2,midPointLocation[1] / 2 ,midPointLocation[2] }; // trzeba podzieliæ przez 2 bo skalujemy razy 0.5 
@@ -981,40 +996,72 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 
 		if (wParam == 'W') // do przodu
 		{
-			velocityL += const_velocity;
-			velocityR += const_velocity;
-			velocityUpdate = 1;
+			if (battery)
+			{
+				velocityL += const_velocity;
+				velocityR += const_velocity;
+			}
+			else if (velocity < 0)
+			{
+				if (velocityL > 0)
+					velocityL -= const_velocity;
+				else
+					velocityL += const_velocity;
+
+				if (velocityR > 0)
+					velocityR -= const_velocity;
+				else
+					velocityR += const_velocity;
+			}
 		}
 
 		if (wParam == 'S') // do tylu
 		{
-			velocityL -= const_velocity;
-			velocityR -= const_velocity;
-			velocityUpdate = 1;
+			if (battery)
+			{
+				velocityL -= const_velocity;
+				velocityR -= const_velocity;
+			}
+			else if (velocity > 0)
+			{
+				if (velocityL > 0)
+					velocityL -= const_velocity;
+				else 
+					velocityL += const_velocity;
+
+				if (velocityR > 0)
+					velocityR -= const_velocity;
+				else
+					velocityR += const_velocity;
+			}
 		}
 
 		if (wParam == 'A') // do tylu
 		{
-			velocityL += const_velocity;
-			velocityR -= const_velocity;
-			velocityUpdate = 1;
+			if (battery)
+			{
+				velocityL += const_velocity;
+				velocityR -= const_velocity;
+			}
 		}
 
 		if (wParam == 'D') // do tylu
 		{
-			velocityR += const_velocity;
-			velocityL -= const_velocity;
-			velocityUpdate = 1;
+			if (battery)
+			{
+				velocityR += const_velocity;
+				velocityL -= const_velocity;
+			}
 		}
 
 		if (wParam == VK_CONTROL) // w gore
 		{
-			posZ -= 3*const_velocity;
+			posZ -= 3 * const_velocity;
 			velocityUpdate = 1;
 		}
 		if (wParam == VK_SHIFT) // w dol
 		{
-			posZ += 3*const_velocity;
+			posZ += 3 * const_velocity;
 			velocityUpdate = 1;
 		}
 		if (wParam == VK_SPACE)
