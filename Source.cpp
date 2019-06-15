@@ -9,6 +9,7 @@
 #ifdef _MSC_VER                         // Check if MS Visual C compiler
 #  pragma comment(lib, "opengl32.lib")  // Compiler-specific directive to avoid manually configuration
 #  pragma comment(lib, "glu32.lib")     // Link libraries
+#  pragma comment(lib, "winmm.lib")
 #endif
 
 
@@ -32,6 +33,7 @@
 #include <gl\glu.h>             // GLU library
 #include <math.h>				// Define for sqrt
 #include <stdio.h>
+#include <time.h>
 #include "resource.h"           // About box resource identifiers.
 #include "include/Lazik.h"
 #include "include/Terrain.h"
@@ -64,33 +66,57 @@ static GLfloat posX = 0.0f;
 static GLfloat posY = 0.0f;
 static GLfloat posZ = 10.0f;
 
+static GLfloat posXShow = 0.0f;
+static GLfloat posYShow = 0.0f;
+static GLfloat posZShow = 10.0f;
+
 static GLfloat const_velocity = 0.7f;
 static GLfloat velocityL = 0.0f;
 static GLfloat velocityR = 0.0f;
 static GLfloat velocity = 0.0f;
 static GLfloat momentumConst = 0.1*const_velocity;
 static GLfloat battery = 100;
+static GLfloat batteryDrain = 2;
+bool batteryCD = 1;
 
 bool velocityUpdate = 0;
 //std::vector<GLfloat> midPointLocation{ 0.0f,0.0f,0.0f,0.0f };
 std::vector<GLfloat> midPointLocation{ 0.0f,0.0f,0.0f };
 std::vector<GLfloat> midPointLocationScaled{ 0,0,0 };
-unsigned int tekstury[6];
+unsigned int tekstury[8];
 
 
-Terrain mars("objects/mars.obj", 0, 0, 0);
-Terrain rock("objects/rock/rock.obj", 50, -100, 4);
+Terrain mars("objects/mars.obj", 0, 0, -10);
+Terrain rock("objects/rock/rock.obj", 50, -100, 10);
 Terrain rock2("objects/rock2/rock2.obj", 200, 0, 15);
 Terrain rock3("objects/rock3/rock3.obj", 300, -200, 35);
+
+GLfloat starPos[3] = { 200,-300,35 };
+GLfloat starPosX[9] = { -400, -300, -200, -100, 0, 100, 200, 300, 400 };
+GLfloat starPosY[9] = { -400, -300, -200, -100, 0, 100, 200, 300, 400 };
+int oldindX = 0;
+int oldindY = 0;
+int starsCollected = 0;
+bool gameWon = 0;
+int starsGoal = 2
+;
+GLfloat starXShow = 200;
+GLfloat starYShow = -300;
+clock_t begin, end;
+double elapsed_secs = 0;
+double elapsed_secsShow;
+bool winCD=0;
 GLfloat *rock1BB;
 GLfloat *rock2BB;
 GLfloat *rock3BB;
 GLfloat *roverBB;
-bool collision[3] = { 0,0,0 };
+GLfloat *starBB;
+bool collision[4] = { 0,0,0,0 };
 bool colliding = 0;
 int collisionTimer = 0;
 
-Lazik rover(0, 0, 10);
+Lazik rover(300, -500, 20);
+
 
 // Opis tekstury
 BITMAPINFOHEADER	bitmapInfoHeader;	// nag³ówek obrazu
@@ -162,6 +188,10 @@ void calcNormal(float v[3][3], float out[3])
 	ReduceToUnit(out);
 }
 
+int randNum(int min, int max)
+{
+	return (rand() % max) + min;;
+}
 unsigned int LoadTexture(const char* file, GLenum textureSlot)
 {
 	GLuint texHandle;
@@ -230,13 +260,14 @@ void ChangeSize(GLsizei w, GLsizei h)
 // the scene.
 void SetupRC()
 {
+	begin = clock();
 	// Light values and coordinates
 	//GLfloat  ambientLight[] = { 0.3f, 0.3f, 0.3f, 1.0f };
 	//GLfloat  diffuseLight[] = { 0.7f, 0.7f, 0.7f, 1.0f };
 	//GLfloat  specular[] = { 1.0f, 1.0f, 1.0f, 1.0f};
 	//GLfloat	 lightPos[] = { 0.0f, 150.0f, 150.0f, 1.0f };
 	//GLfloat  specref[] =  { 1.0f, 1.0f, 1.0f, 1.0f };
-
+	srand(time(NULL));
 
 	glEnable(GL_DEPTH_TEST);	// Hidden surface removal
 	//glFrontFace(GL_CCW);		// Counter clock-wise polygons face out
@@ -266,6 +297,10 @@ void SetupRC()
 
 	// White background
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+	// non-white background
+	glClearColor(0.2, 0.2, 0.2, 1);
+
 	// Black brush
 	glColor3f(0.0, 0.0, 0.0);
 
@@ -277,6 +312,7 @@ void SetupRC()
 	tekstury[4] = LoadTexture("objects/body.png", 1);
 	tekstury[5] = LoadTexture("objects/wheel.png", 1);
 	tekstury[6] = LoadTexture("objects/axle.png", 1);
+	tekstury[7] = LoadTexture("objects/star.png", 1);
 
 	rover.setSzescianTex(tekstury[4]);
 	rover.setWheelTex(tekstury[5]);
@@ -297,8 +333,8 @@ void SetupRC()
 	TwAddVarRW(bar, "velocity", TW_TYPE_FLOAT, &velocity, "precision=1");
 	TwAddSeparator(bar, NULL, "");
 
-	TwAddVarRW(bar, "x position", TW_TYPE_FLOAT, &posX, "precision=1");
-	TwAddVarRW(bar, "y position", TW_TYPE_FLOAT, &posY, "precision=1");
+	TwAddVarRW(bar, "x position", TW_TYPE_FLOAT, &posXShow, "precision=1");
+	TwAddVarRW(bar, "y position", TW_TYPE_FLOAT, &posYShow, "precision=1");
 	TwAddVarRW(bar, "rotAngle", TW_TYPE_FLOAT, &rotAngleDeg, "precision=1");
 	TwAddSeparator(bar, NULL, "");
 
@@ -309,11 +345,25 @@ void SetupRC()
 	TwAddVarRW(bar, "colliding #2", TW_TYPE_BOOLCPP, &collision[1], "");
 	TwAddVarRW(bar, "colliding #3", TW_TYPE_BOOLCPP, &collision[2], "");
 	TwAddVarRW(bar, "timer", TW_TYPE_INT16, &collisionTimer, "");
+
+	TwAddSeparator(bar, NULL, "");
+	TwAddVarRW(bar, "time", TW_TYPE_DOUBLE, &elapsed_secs, "");
+	TwAddVarRW(bar, "stars collected", TW_TYPE_INT8, &starsCollected, "");
+	TwAddVarRW(bar, "star X", TW_TYPE_FLOAT, &starXShow, "precision=1");
+	TwAddVarRW(bar, "star Y", TW_TYPE_FLOAT, &starYShow, "precision=1");
+	TwAddVarRW(bar, "game won", TW_TYPE_BOOLCPP, &gameWon, "");
+
 	GLfloat refresh = 0.1;
 	TwSetParam(bar, NULL, "refresh", TW_PARAM_FLOAT, 1, &refresh);
 
-	int barSize[2] = { 224, 250 };
+	int barSize[2] = { 224, 350 };
 	TwSetParam(bar, NULL, "size", TW_PARAM_INT32, 2, barSize);
+
+
+
+
+
+
 }
 
 
@@ -393,10 +443,15 @@ void RenderScene(void)
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+
 	// Save the matrix state and do the rotations
 
 	glPushMatrix();
 
+	glPushMatrix();
+
+
+	glPopMatrix();
 	//if (velocityUpdate)
 //	{
 
@@ -415,58 +470,52 @@ void RenderScene(void)
 		//rotAngle = 0;
 
 	if (abs(velocity) > 0.5 && battery > 0)
-		battery -= 1;
+		battery -= batteryDrain;
 
 	if (abs(velocity) < 0.5 && battery < 100)
-		battery += 1;
+		battery += batteryDrain;
 
 
 	posX += velocity * sin(-rotAngle); // Obliczanie nowej pozycji w osi x; X = x_0 + v*t; gdzie t = sin(-a);
 	posY += velocity * cos(rotAngle);// Obliczanie nowej pozycji w osi y; Y = y_0 + v*t; gdzie t = cos(a);
 
 	gluLookAt(
-		posX, // eye X
-		posY - 200, // eye Y
+		posX + 300 / 2, // eye X
+		posY - 500 / 2 - 200, // eye Y
 		posZ + 200, // eye Z
-		posX, // center X
-		posY, // center Y
+		posX + 300 / 2, // center X
+		posY - 500 / 2, // center Y
 		posZ, // center Z
 		0.0,
 		1.0,
 		0.0
 	);
 
-	//Szescian rock1BBMax(rock1BB[0], rock1BB[1],10, rock1BB[2]- rock1BB[0], rock1BB[3]- rock1BB[1],10);
+	/* //Drawing bounding boxes for rocks
 	Szescian rock1BBMax(rock1BB[0] + 50, rock1BB[1] - 100, 10, 1, 1, 100);
-	//Szescian rock1BBMax(rock1BB[0], rock1BB[1], 10,1,1, 100);
 	rock1BBMax.setColor(0.5, 0.5, 0.5);
 	rock1BBMax.draw();
 
 	Szescian rock1BBMin(rock1BB[2] + 50, rock1BB[3] - 100, 10, 1, 1, 100);
-	//Szescian rock1BBMin(rock1BB[2], rock1BB[3], 10,1,1, 100);
 	rock1BBMin.setColor(1, 0, 0);
 	rock1BBMin.draw();
 
 	Szescian rock2BBMax(rock2BB[0] + 200, rock2BB[1], 10, 1, 1, 100);
-	//Szescian rock2BBMax(rock1BB[0], rock1BB[1], 10,1,1, 10);
 	rock2BBMax.setColor(0.5, 0.5, 0.5);
 	rock2BBMax.draw();
 
 	Szescian rock2BBMin(rock2BB[2] + 200, rock2BB[3], 10, 1, 1, 100);
-	//Szescian rock2BBMin(rock1BB[0], rock1BB[1], 10,1,1, 10);
 	rock2BBMin.setColor(1, 0, 0);
 	rock2BBMin.draw();
 
 	Szescian rock3BBMax(rock3BB[0] + 300, rock3BB[1] - 200, 10, 1, 1, 100);
-	//Szescian rock3BBMax(rock1BB[0], rock1BB[1], 10,1,1, 10);
 	rock3BBMax.setColor(0.5, 0.5, 0.5);
 	rock3BBMax.draw();
 
 	Szescian rock3BBMin(rock3BB[2] + 300, rock3BB[3] - 200, 10, 1, 1, 100);
-	//Szescian rock3BBMin(rock1BB[0], rock1BB[1], 10,1,1, 10);
 	rock3BBMin.setColor(1, 0, 0);
 	rock3BBMin.draw();
-
+	*/
 	roverBB = rover.getBB();
 
 	roverBB[0] = posX + roverBB[0] / 2;
@@ -474,23 +523,31 @@ void RenderScene(void)
 	roverBB[2] = posX + roverBB[2] / 2;
 	roverBB[3] = posY + roverBB[3] / 2;
 
-	//Szescian roverBBMax(posX + roverBB[0] / 2, posY + roverBB[1] / 2, 10, 1, 1, 100);
+	/* //Drawing bounding boxes for rover
 	Szescian roverBBMax(roverBB[0], roverBB[1], 10, 1, 1, 100);
 	roverBBMax.setColor(0, 0, 1);
 	roverBBMax.draw();
 
-	//Szescian roverBBMin(posX+roverBB[2]/2, posY+roverBB[3]/2, 10, 1, 1, 100);
 	Szescian roverBBMin(roverBB[2], roverBB[3], 10, 1, 1, 100);
 	roverBBMin.setColor(0, 0, 1);
 	roverBBMin.draw();
+	*/
+
+	Terrain star("objects/star/star.obj", starPos[0], starPos[1], starPos[2]);
+	starBB = star.getBB();
+
+
+
+
 
 	collision[0] = !(roverBB[0] < rock1BB[2] + 50 || roverBB[1] < rock1BB[3] - 100 || roverBB[2] > rock1BB[0] + 50 || roverBB[3] > rock1BB[1] - 100);
 	collision[1] = !(roverBB[0] < rock2BB[2] + 200 || roverBB[1] < rock2BB[3] || roverBB[2] > rock2BB[0] + 200 || roverBB[3] > rock2BB[1]);
 	collision[2] = !(roverBB[0] < rock3BB[2] + 300 || roverBB[1] < rock3BB[3] - 200 || roverBB[2] > rock3BB[0] + 300 || roverBB[3] > rock3BB[1] - 200);
+	collision[3] = !(roverBB[0] < starBB[2] + starPos[0] || roverBB[1] < starBB[3] + starPos[1] || roverBB[2] > starBB[0] + starPos[0] || roverBB[3] > starBB[1] + starPos[1]);
 	glPushMatrix();
 
-	glRotatef(90, 1, 0, 0);
-	glScalef(2, 2, 2);
+	//glRotatef(90, 1, 0, 0);
+	glScalef(3, 3, 3);
 
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, tekstury[0]);
@@ -500,6 +557,8 @@ void RenderScene(void)
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	glPopMatrix();
+
+
 
 
 	glPushMatrix();
@@ -540,6 +599,20 @@ void RenderScene(void)
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	glPopMatrix();
+
+	if (!gameWon) {
+		glPushMatrix();
+
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, tekstury[7]);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		star.setColor(1, 1, 0);
+		star.draw();
+		glDisable(GL_TEXTURE_2D);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+		glPopMatrix();
+	}
 
 	glPushMatrix();
 
@@ -615,6 +688,7 @@ void RenderScene(void)
 		velocity = -0.75*velocity;
 		colliding = 1;
 		collisionTimer = 5;
+		PlaySound(TEXT("sounds/crash.wav"), NULL, SND_ASYNC);
 	}
 
 	if (collisionTimer)
@@ -623,8 +697,69 @@ void RenderScene(void)
 		colliding = 0;
 
 
+	if (collision[3] && starsCollected < starsGoal)
+	{
+		PlaySound(TEXT("sounds/point.wav"), NULL, SND_ASYNC);
+		int indX, indY;
+		do {
+			indX = randNum(1, 9) - 1;
+			indY = randNum(1, 9) - 1;
+		} while (indX == oldindX || indY == oldindY || (indX == 6 && indY == 4));
+
+		starPos[0] = starPosX[indX];
+		starPos[1] = starPosY[indY];
+
+		collision[3] = 0;
+
+		starsCollected++;
+		starXShow = starPos[0];
+		starYShow = starPos[1];
+		batteryCD = 0;
+		battery = 100;
+	}
+
+	posXShow = posX + 300 / 2;
+	posYShow = posY - 500 / 2;
+
+
+	if (!gameWon)
+	{
+		end = clock();
+		elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+	}
+	else
+	{
+		starXShow = 0;
+		starYShow = 0;
+		batteryDrain = 0;
+		if (!winCD)
+		{
+			winCD = 1;
+			PlaySound(TEXT("sounds/win.wav"), NULL, SND_ASYNC);
+		}
+	}
+
+	if (starsCollected == starsGoal)
+		gameWon = 1;
+
+
+	if (!battery && batteryCD && !gameWon)
+	{
+		batteryCD = 0;
+		PlaySound(TEXT("sounds/poweroff.wav"), NULL, SND_ASYNC);
+	}
+	if (battery == 100 && batteryCD && !gameWon)
+	{
+		batteryCD = 0;
+		PlaySound(TEXT("sounds/charged.wav"), NULL, SND_ASYNC);
+	}
+	if (battery > 10 && battery<80)
+		batteryCD = 1;
+
 
 	glMatrixMode(GL_MODELVIEW);
+
+	
 
 	// Flush drawing commands
 	glFlush();
@@ -791,7 +926,7 @@ int APIENTRY WinMain(HINSTANCE       hInst,
 
 
 	// Display the window
-	ShowWindow(hWnd, SW_SHOW);
+	ShowWindow(hWnd, SW_MAXIMIZE);
 	UpdateWindow(hWnd);
 
 	// Process application messages until the application closes
@@ -1026,7 +1161,7 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 			{
 				if (velocityL > 0)
 					velocityL -= const_velocity;
-				else 
+				else
 					velocityL += const_velocity;
 
 				if (velocityR > 0)
@@ -1063,11 +1198,13 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		{
 			posZ += 3 * const_velocity;
 			velocityUpdate = 1;
+
 		}
 		if (wParam == VK_SPACE)
 		{
 			velocityR = velocityL = 0;
 			velocityUpdate = 1;
+
 		}
 
 		InvalidateRect(hWnd, NULL, FALSE);
