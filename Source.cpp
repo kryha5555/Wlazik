@@ -34,6 +34,7 @@
 #include <math.h>				// Define for sqrt
 #include <stdio.h>
 #include <time.h>
+#include <fstream>
 #include "resource.h"           // About box resource identifiers.
 #include "include/Lazik.h"
 #include "include/Terrain.h"
@@ -76,7 +77,7 @@ static GLfloat velocityR = 0.0f;
 static GLfloat velocity = 0.0f;
 static GLfloat momentumConst = 0.1*const_velocity;
 static GLfloat battery = 100;
-static GLfloat batteryDrain = 2;
+static GLfloat batteryDrain = 1;
 bool batteryCD = 1;
 
 bool velocityUpdate = 0;
@@ -89,7 +90,7 @@ unsigned int tekstury[8];
 Terrain mars("objects/mars.obj", 0, 0, -10);
 Terrain rock("objects/rock/rock.obj", 50, -100, 10);
 Terrain rock2("objects/rock2/rock2.obj", 200, 0, 15);
-Terrain rock3("objects/rock3/rock3.obj", 300, -200, 35);
+Terrain rock3("objects/rock3/rock3.obj", 300, -200, 15);
 
 GLfloat starPos[3] = { 200,-300,35 };
 GLfloat starPosX[9] = { -400, -300, -200, -100, 0, 100, 200, 300, 400 };
@@ -98,13 +99,18 @@ int oldindX = 0;
 int oldindY = 0;
 int starsCollected = 0;
 bool gameWon = 0;
-int starsGoal = 2
-;
+int starsGoal = 10;
+
+
+
 GLfloat starXShow = 200;
 GLfloat starYShow = -300;
 clock_t begin, end;
 double elapsed_secs = 0;
 double elapsed_secsShow;
+double best_time;
+std::fstream file;
+
 bool winCD=0;
 GLfloat *rock1BB;
 GLfloat *rock2BB;
@@ -260,7 +266,8 @@ void ChangeSize(GLsizei w, GLsizei h)
 // the scene.
 void SetupRC()
 {
-	begin = clock();
+
+	
 	// Light values and coordinates
 	//GLfloat  ambientLight[] = { 0.3f, 0.3f, 0.3f, 1.0f };
 	//GLfloat  diffuseLight[] = { 0.7f, 0.7f, 0.7f, 1.0f };
@@ -344,7 +351,7 @@ void SetupRC()
 	TwAddVarRW(bar, "colliding #1", TW_TYPE_BOOLCPP, &collision[0], "");
 	TwAddVarRW(bar, "colliding #2", TW_TYPE_BOOLCPP, &collision[1], "");
 	TwAddVarRW(bar, "colliding #3", TW_TYPE_BOOLCPP, &collision[2], "");
-	TwAddVarRW(bar, "timer", TW_TYPE_INT16, &collisionTimer, "");
+	TwAddVarRW(bar, "collision timer", TW_TYPE_INT16, &collisionTimer, "");
 
 	TwAddSeparator(bar, NULL, "");
 	TwAddVarRW(bar, "time", TW_TYPE_DOUBLE, &elapsed_secs, "");
@@ -352,18 +359,22 @@ void SetupRC()
 	TwAddVarRW(bar, "star X", TW_TYPE_FLOAT, &starXShow, "precision=1");
 	TwAddVarRW(bar, "star Y", TW_TYPE_FLOAT, &starYShow, "precision=1");
 	TwAddVarRW(bar, "game won", TW_TYPE_BOOLCPP, &gameWon, "");
+	TwAddVarRW(bar, "best time", TW_TYPE_DOUBLE, &best_time, "");
 
 	GLfloat refresh = 0.1;
 	TwSetParam(bar, NULL, "refresh", TW_PARAM_FLOAT, 1, &refresh);
 
-	int barSize[2] = { 224, 350 };
+	int barSize[2] = { 224, 400 };
 	TwSetParam(bar, NULL, "size", TW_PARAM_INT32, 2, barSize);
 
 
+	
+	file.open("scoreboard.dat");
+    file >> best_time;
+	file.close();
 
 
-
-
+	begin = clock();
 }
 
 
@@ -736,6 +747,14 @@ void RenderScene(void)
 		{
 			winCD = 1;
 			PlaySound(TEXT("sounds/win.wav"), NULL, SND_ASYNC);
+			if (elapsed_secs < best_time) 
+			{
+				best_time = elapsed_secs;
+				file.open("scoreboard.dat");
+				file << elapsed_secs;
+				file.close();
+			}
+
 		}
 	}
 
